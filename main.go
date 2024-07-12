@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -16,6 +17,7 @@ import (
 
 func main() {
 	downloadGwinnettAuctionData()
+	runPdfExtraction("pdf-extract.py")
 }
 
 func downloadGwinnettAuctionData() {
@@ -135,6 +137,24 @@ func downloadGwinnettAuctionData() {
 
 		fmt.Print("No PDF found for upcoming sales. Past sales updated.\n----------------------------------------------------------------------------------------------------------------------------------\n")
 	}
+}
+
+func runPdfExtraction(script string) {
+	fmt.Println("Extracting data to csv located in ./tax-auction/Gwinnett. Please wait...")
+
+	// create csv files
+	os.Create("./tax-auction/Gwinnett/Gwinnett-Past-Sales.csv")
+	os.Create("./tax-auction/Gwinnett/Gwinnett-Upcoming-Sales.csv")
+
+	cmd := exec.Command("python", script)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		slog.Error(fmt.Sprintf("Error running Python script: %v", err))
+	}
+
+	fmt.Println("Data extraction complete")
 }
 
 // Function to download a file from a URL
