@@ -81,7 +81,7 @@ func downloadGwinnettAuctionData() {
 	}
 
 	//Create directory to hold pdfs
-	gwinnettDir := "tax-auction/Gwinnett/pdf"
+	gwinnettDir := "tax-auction/Gwinnett"
 	if err := os.MkdirAll(gwinnettDir, os.ModePerm); err != nil {
 		log.Fatalf("Error creating directory: %v", err)
 	}
@@ -89,10 +89,10 @@ func downloadGwinnettAuctionData() {
 	// If a PDF link was found, download the PDF
 	if pastResultsURL != gwinnettTaxURL && upcomingSalesURL != gwinnettTaxURL {
 		// Create the file paths
-		upcomingSalesPDF := "Gwinnett-Upcoming-Sales.pdf"
+		upcomingSalesPDF := "/pdf/Gwinnett-Upcoming-Sales.pdf"
 		upcomingSalesFilepath := filepath.Join(gwinnettDir, upcomingSalesPDF)
 
-		pastResultsPDF := "Gwinnett-Past-Sales.pdf"
+		pastResultsPDF := "/pdf/Gwinnett-Past-Sales.pdf"
 		pastResultsFilepath := filepath.Join(gwinnettDir, pastResultsPDF)
 
 		// remove old files
@@ -114,7 +114,7 @@ func downloadGwinnettAuctionData() {
 
 		fmt.Printf("Gwinnett auction data downloaded successfully to: ./%s\n----------------------------------------------------------------------------------------------------------------------------------\n", gwinnettDir)
 	} else if pastResultsURL == gwinnettTaxURL {
-		upcomingSalesPDF := "Gwinnett-Upcoming-Sales.pdf"
+		upcomingSalesPDF := "/pdf/Gwinnett-Upcoming-Sales.pdf"
 		upcomingSalesFilepath := filepath.Join(gwinnettDir, upcomingSalesPDF)
 
 		os.Remove(upcomingSalesFilepath)
@@ -124,7 +124,7 @@ func downloadGwinnettAuctionData() {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
 
-		fmt.Print("No PDF found for past sale history. Upcoming sales updated.\n----------------------------------------------------------------------------------------------------------------------------------\n")
+		fmt.Print("No PDF found for past sale history. Upcoming sales pdf updated.\n----------------------------------------------------------------------------------------------------------------------------------\n")
 	} else if upcomingSalesURL == gwinnettTaxURL {
 		pastResultsPDF := "Gwinnett-Past-Sales.pdf"
 		pastResultsFilepath := filepath.Join(gwinnettDir, pastResultsPDF)
@@ -136,7 +136,7 @@ func downloadGwinnettAuctionData() {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
 
-		fmt.Print("No PDF found for upcoming sales. Past sales updated.\n----------------------------------------------------------------------------------------------------------------------------------\n")
+		fmt.Print("No PDF found for upcoming sales. Past sales pdf updated.\n----------------------------------------------------------------------------------------------------------------------------------\n")
 	}
 }
 
