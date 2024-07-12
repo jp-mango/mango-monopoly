@@ -1,10 +1,10 @@
 import tabula
 
-gwinnettPastSalesPDF = "./tax-auction/Gwinnett/Gwinnett-Past-Sales.pdf"
-gwinnettUpcomingSalesPDF = "./tax-auction/Gwinnett/Gwinnett-Upcoming-Sales.pdf"
+gwinnettPastSalesPDF = "./tax-auction/Gwinnett/pdf/Gwinnett-Past-Sales.pdf"
+gwinnettUpcomingSalesPDF = "./tax-auction/Gwinnett/pdf/Gwinnett-Upcoming-Sales.pdf"
 
-gwinnettPastSalesCSV = "./tax-auction/Gwinnett/Gwinnett-Past-Sales.csv"
-gwinnettUpcomingSalesCSV = "./tax-auction/Gwinnett/Gwinnett-Upcoming-Sales.csv"
+gwinnettPastSalesCSV = "./tax-auction/Gwinnett/csv/Gwinnett-Past-Sales.csv"
+gwinnettUpcomingSalesCSV = "./tax-auction/Gwinnett/csv/Gwinnett-Upcoming-Sales.csv"
 
 gps = tabula.read_pdf(gwinnettPastSalesPDF, pages="all", stream=True)
 gus = tabula.read_pdf(gwinnettUpcomingSalesPDF, pages="all", stream=True)
