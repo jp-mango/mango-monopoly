@@ -6,9 +6,6 @@ gwinnettUpcomingSalesPDF = "./tax-auction/Gwinnett/pdf/Gwinnett-Upcoming-Sales.p
 gwinnettPastSalesCSV = "./tax-auction/Gwinnett/csv/Gwinnett-Past-Sales.csv"
 gwinnettUpcomingSalesCSV = "./tax-auction/Gwinnett/csv/Gwinnett-Upcoming-Sales.csv"
 
-gps = tabula.read_pdf(gwinnettPastSalesPDF, pages="all", stream=True)
-gus = tabula.read_pdf(gwinnettUpcomingSalesPDF, pages="all", stream=True)
-
 tabula.convert_into(
     gwinnettPastSalesPDF, gwinnettPastSalesCSV, output_format="csv", pages="all"
 )
