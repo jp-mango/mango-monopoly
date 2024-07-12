@@ -4,16 +4,26 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/gocolly/colly"
 )
 
 func main() {
 	downloadGwinnettAuctionData()
+	readPDF()
+}
+
+func readPDF() {
+	gwinnettSaleHistoryPath := "tax-auction/Gwinnett/Gwinnett-Past-Sales.pdf"
+	gsh, err := os.Open(gwinnettSaleHistoryPath)
+	if err != nil {
+		slog.Error(fmt.Sprintf("unable to open file: %v", err))
+	}
+	defer gsh.Close()
 }
 
 func downloadGwinnettAuctionData() {
@@ -48,10 +58,10 @@ func downloadGwinnettAuctionData() {
 		log.Fatalf("Error visiting the page: %v", err)
 	}
 
-	current_time := time.Now().Format("2006-01-02_15-04-05")
-
 	// If a PDF link was found, download the PDF
 	if pastResults != "" && upcomingSales != "" {
+		// empty directory content
+		os.RemoveAll("tax-auction/Gwinnett")
 		// Ensure the directory exists
 		gwinnettDir := "tax-auction/Gwinnett"
 		if err := os.MkdirAll(gwinnettDir, os.ModePerm); err != nil {
@@ -59,10 +69,10 @@ func downloadGwinnettAuctionData() {
 		}
 
 		// Create the file paths
-		upcomingSalesPDF := fmt.Sprintf("Gwinnett-Upcoming-Sales_%s.pdf", current_time)
+		upcomingSalesPDF := "Gwinnett-Upcoming-Sales.pdf"
 		upcomingSalesFilepath := filepath.Join(gwinnettDir, upcomingSalesPDF)
 
-		pastResultsPDF := fmt.Sprintf("Gwinnett-Past-Sales_%s.pdf", current_time)
+		pastResultsPDF := "Gwinnett-Past-Sales.pdf"
 		pastResultsFilepath := filepath.Join(gwinnettDir, pastResultsPDF)
 
 		// Download the files
@@ -75,7 +85,7 @@ func downloadGwinnettAuctionData() {
 		if err != nil {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
-		fmt.Println("Gwinnett auction data downloaded successfully!")
+		fmt.Print("Gwinnett auction data downloaded successfully!\n----------------------------------------------------------------------------------------------------------------------------------\n")
 	} else {
 		fmt.Println("No PDF link found.")
 	}
