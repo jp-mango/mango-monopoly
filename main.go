@@ -8,22 +8,13 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/gocolly/colly"
 )
 
 func main() {
 	downloadGwinnettAuctionData()
-	readPDF()
-}
-
-func readPDF() {
-	gwinnettSaleHistoryPath := "tax-auction/Gwinnett/Gwinnett-Past-Sales.pdf"
-	gsh, err := os.Open(gwinnettSaleHistoryPath)
-	if err != nil {
-		slog.Error(fmt.Sprintf("unable to open file: %v", err))
-	}
-	defer gsh.Close()
 }
 
 func downloadGwinnettAuctionData() {
@@ -31,42 +22,59 @@ func downloadGwinnettAuctionData() {
 		colly.AllowedDomains("gwinnetttaxcommissioner.publicaccessnow.com"),
 	)
 
-	var upcomingSales string
-	var pastResults string
+	var upcomingSalesURL string
+	var pastResultsURL string
+	var upcomingAuctions []string
 
 	// Select div - #: ID, .:Class
 	// Gwinnett's upcoming sales
 	c.OnHTML("#dnn_ctr1334_ModuleContent a", func(us *colly.HTMLElement) {
-		upcomingSales = us.Request.AbsoluteURL(us.Attr("href"))
-		fmt.Printf("Gwinnett's upcoming auctions: %s\n\n", upcomingSales)
+		upcomingSalesURL = us.Request.AbsoluteURL(us.Attr("href"))
 	})
 
 	// Gwinnett's past results
 	c.OnHTML("#dnn_ctr1341_ContentPane a", func(pr *colly.HTMLElement) {
-		pastResults = pr.Request.AbsoluteURL(pr.Attr("href"))
-		fmt.Printf("Gwinnett's auction sale history: %s\n\n", pastResults)
+		pastResultsURL = pr.Request.AbsoluteURL(pr.Attr("href"))
+	})
+
+	//Upcoming auction dates
+	c.OnHTML("#dnn_ctr1334_ModuleContent span[style*='font-size: 18px']", func(ad *colly.HTMLElement) {
+		upcomingAuctions = append(upcomingAuctions, strings.TrimSpace(ad.Text))
 	})
 
 	// On request log the URL
 	c.OnRequest(func(r *colly.Request) {
-		log.Println("Visiting\n\n", r.URL.String())
+		log.Printf("Visiting: %s\n\n", r.URL.String())
 	})
 
 	// Visit the page to scrape the link
-	err := c.Visit("https://gwinnetttaxcommissioner.publicaccessnow.com/PropertyTax/DelinquentTax/TaxLiensTaxSales.aspx")
+	gwinnettTaxURL := "https://gwinnetttaxcommissioner.publicaccessnow.com/PropertyTax/DelinquentTax/TaxLiensTaxSales.aspx"
+	err := c.Visit(gwinnettTaxURL)
 	if err != nil {
-		log.Fatalf("Error visiting the page: %v", err)
+		slog.Error(fmt.Sprintf("Error visiting the page: %v", err))
+	}
+
+	//Print upcoming auctions
+	if len(upcomingAuctions) > 0 {
+		fmt.Println("Upcoming Auctions")
+		fmt.Println("------------------")
+		for _, date := range upcomingAuctions {
+			fmt.Println(date)
+		}
+		fmt.Println()
+	}
+
+	//Create directory to hold pdfs
+	gwinnettDir := "tax-auction/Gwinnett"
+	if err := os.MkdirAll(gwinnettDir, os.ModePerm); err != nil {
+		log.Fatalf("Error creating directory: %v", err)
 	}
 
 	// If a PDF link was found, download the PDF
-	if pastResults != "" && upcomingSales != "" {
-		// empty directory content
-		os.RemoveAll("tax-auction/Gwinnett")
-		// Ensure the directory exists
-		gwinnettDir := "tax-auction/Gwinnett"
-		if err := os.MkdirAll(gwinnettDir, os.ModePerm); err != nil {
-			log.Fatalf("Error creating directory: %v", err)
-		}
+	if pastResultsURL != gwinnettTaxURL && upcomingSalesURL != gwinnettTaxURL {
+		// remove old files
+		os.Remove("tax-auction/Gwinnett/Gwinnett-Past-Sales.pdf")
+		os.Remove("tax-auction/Gwinnett/Gwinnett-Upcoming-Sales.pdf")
 
 		// Create the file paths
 		upcomingSalesPDF := "Gwinnett-Upcoming-Sales.pdf"
@@ -76,18 +84,41 @@ func downloadGwinnettAuctionData() {
 		pastResultsFilepath := filepath.Join(gwinnettDir, pastResultsPDF)
 
 		// Download the files
-		err := downloadFile(upcomingSalesFilepath, upcomingSales)
+		err := downloadFile(upcomingSalesFilepath, upcomingSalesURL)
 		if err != nil {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
 
-		err = downloadFile(pastResultsFilepath, pastResults)
+		err = downloadFile(pastResultsFilepath, pastResultsURL)
 		if err != nil {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
-		fmt.Print("Gwinnett auction data downloaded successfully!\n----------------------------------------------------------------------------------------------------------------------------------\n")
-	} else {
-		fmt.Println("No PDF link found.")
+
+		fmt.Printf("Gwinnett auction data downloaded successfully to: ./%s\n----------------------------------------------------------------------------------------------------------------------------------\n", gwinnettDir)
+	} else if pastResultsURL == gwinnettTaxURL {
+		os.Remove("tax-auction/Gwinnett/Gwinnett-Upcoming-Sales.pdf")
+
+		upcomingSalesPDF := "Gwinnett-Upcoming-Sales.pdf"
+		upcomingSalesFilepath := filepath.Join(gwinnettDir, upcomingSalesPDF)
+
+		err := downloadFile(upcomingSalesFilepath, upcomingSalesURL)
+		if err != nil {
+			log.Fatalf("Error downloading upcoming sales: %v", err)
+		}
+
+		fmt.Print("No PDF found for past sale history. Upcoming sales updated.\n----------------------------------------------------------------------------------------------------------------------------------\n")
+	} else if upcomingSalesURL == gwinnettTaxURL {
+		os.Remove("tax-auction/Gwinnett/Gwinnett-Past-Sales.pdf")
+
+		pastResultsPDF := "Gwinnett-Past-Sales.pdf"
+		pastResultsFilepath := filepath.Join(gwinnettDir, pastResultsPDF)
+
+		err = downloadFile(pastResultsFilepath, pastResultsURL)
+		if err != nil {
+			log.Fatalf("Error downloading upcoming sales: %v", err)
+		}
+
+		fmt.Print("No PDF found for upcoming sales. Past sales updated.\n----------------------------------------------------------------------------------------------------------------------------------\n")
 	}
 }
 
