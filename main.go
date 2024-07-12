@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/gocolly/colly"
 )
@@ -39,7 +40,13 @@ func downloadGwinnettAuctionData() {
 
 	//Upcoming auction dates
 	c.OnHTML("#dnn_ctr1334_ModuleContent span[style*='font-size: 18px']", func(ad *colly.HTMLElement) {
-		upcomingAuctions = append(upcomingAuctions, strings.TrimSpace(ad.Text))
+		dates := strings.Split(ad.Text, "\n")
+		for _, date := range dates {
+			trimmedDate := strings.TrimSpace(date)
+			if trimmedDate != "" {
+				upcomingAuctions = append(upcomingAuctions, trimmedDate)
+			}
+		}
 	})
 
 	// On request log the URL
@@ -56,10 +63,18 @@ func downloadGwinnettAuctionData() {
 
 	//Print upcoming auctions
 	if len(upcomingAuctions) > 0 {
-		fmt.Println("Upcoming Auctions")
+		fmt.Printf("Upcoming Auction Dates\n")
 		fmt.Println("------------------")
 		for _, date := range upcomingAuctions {
-			fmt.Println(date)
+			auctionDate, err := time.Parse("January 2, 2006", date)
+			if err != nil {
+				slog.Error(fmt.Sprintf("Error parsing date '%s': %v", date, err))
+			}
+
+			nextAuctionTime := time.Until(auctionDate)
+
+			days := int(nextAuctionTime.Hours()) / 24
+			fmt.Printf("%s | %d days\n", date, days)
 		}
 		fmt.Println()
 	}
