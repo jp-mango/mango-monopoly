@@ -17,7 +17,6 @@ import (
 
 func main() {
 	downloadGwinnettAuctionData()
-	runPdfExtraction("pdf-extract.py")
 }
 
 func downloadGwinnettAuctionData() {
@@ -82,23 +81,23 @@ func downloadGwinnettAuctionData() {
 	}
 
 	//Create directory to hold pdfs
-	gwinnettDir := "tax-auction/Gwinnett"
+	gwinnettDir := "tax-auction/Gwinnett/pdf"
 	if err := os.MkdirAll(gwinnettDir, os.ModePerm); err != nil {
 		log.Fatalf("Error creating directory: %v", err)
 	}
 
 	// If a PDF link was found, download the PDF
 	if pastResultsURL != gwinnettTaxURL && upcomingSalesURL != gwinnettTaxURL {
-		// remove old files
-		os.Remove("tax-auction/Gwinnett/Gwinnett-Past-Sales.pdf")
-		os.Remove("tax-auction/Gwinnett/Gwinnett-Upcoming-Sales.pdf")
-
 		// Create the file paths
 		upcomingSalesPDF := "Gwinnett-Upcoming-Sales.pdf"
 		upcomingSalesFilepath := filepath.Join(gwinnettDir, upcomingSalesPDF)
 
 		pastResultsPDF := "Gwinnett-Past-Sales.pdf"
 		pastResultsFilepath := filepath.Join(gwinnettDir, pastResultsPDF)
+
+		// remove old files
+		os.Remove(pastResultsFilepath)
+		os.Remove(upcomingSalesFilepath)
 
 		// Download the files
 		err := downloadFile(upcomingSalesFilepath, upcomingSalesURL)
@@ -111,12 +110,14 @@ func downloadGwinnettAuctionData() {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
 
+		runPdfExtraction("pdf-extract.py")
+
 		fmt.Printf("Gwinnett auction data downloaded successfully to: ./%s\n----------------------------------------------------------------------------------------------------------------------------------\n", gwinnettDir)
 	} else if pastResultsURL == gwinnettTaxURL {
-		os.Remove("tax-auction/Gwinnett/Gwinnett-Upcoming-Sales.pdf")
-
 		upcomingSalesPDF := "Gwinnett-Upcoming-Sales.pdf"
 		upcomingSalesFilepath := filepath.Join(gwinnettDir, upcomingSalesPDF)
+
+		os.Remove(upcomingSalesFilepath)
 
 		err := downloadFile(upcomingSalesFilepath, upcomingSalesURL)
 		if err != nil {
@@ -125,10 +126,10 @@ func downloadGwinnettAuctionData() {
 
 		fmt.Print("No PDF found for past sale history. Upcoming sales updated.\n----------------------------------------------------------------------------------------------------------------------------------\n")
 	} else if upcomingSalesURL == gwinnettTaxURL {
-		os.Remove("tax-auction/Gwinnett/Gwinnett-Past-Sales.pdf")
-
 		pastResultsPDF := "Gwinnett-Past-Sales.pdf"
 		pastResultsFilepath := filepath.Join(gwinnettDir, pastResultsPDF)
+
+		os.Remove(pastResultsFilepath)
 
 		err = downloadFile(pastResultsFilepath, pastResultsURL)
 		if err != nil {
@@ -143,8 +144,8 @@ func runPdfExtraction(script string) {
 	fmt.Println("Extracting data to csv located in ./tax-auction/Gwinnett. Please wait...")
 
 	// create csv files
-	os.Create("./tax-auction/Gwinnett/Gwinnett-Past-Sales.csv")
-	os.Create("./tax-auction/Gwinnett/Gwinnett-Upcoming-Sales.csv")
+	os.Create("./tax-auction/Gwinnett/csv/Gwinnett-Past-Sales.csv")
+	os.Create("./tax-auction/Gwinnett/csv/Gwinnett-Upcoming-Sales.csv")
 
 	cmd := exec.Command("python", script)
 	cmd.Stdout = os.Stdout
@@ -154,7 +155,7 @@ func runPdfExtraction(script string) {
 		slog.Error(fmt.Sprintf("Error running Python script: %v", err))
 	}
 
-	fmt.Println("Data extraction complete")
+	fmt.Print("Data extraction complete\n\n")
 }
 
 // Function to download a file from a URL
