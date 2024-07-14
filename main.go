@@ -212,4 +212,21 @@ func dbConnect() {
 	}
 
 	fmt.Println("Successfully connected to mango-monopoly")
+
+	rows, err := db.Query("SELECT * FROM Properties LIMIT 0")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	// Get column names
+	columns, err := rows.Columns()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Column Headers:")
+	for _, col := range columns {
+		fmt.Println(col)
+	}
 }
