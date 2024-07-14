@@ -1,29 +1,19 @@
-package main
+package scraper
 
 import (
-	"database/sql"
 	"fmt"
-	"io"
 	"log"
 	"log/slog"
-	"net/http"
+	"mango-monopoly/internal/utils"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/gocolly/colly"
-	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 )
 
-func main() {
-	downloadGwinnettAuctionData()
-	dbConnect()
-}
-
-func downloadGwinnettAuctionData() {
+func DownloadGwinnettAuctionData() {
 	c := colly.NewCollector(
 		colly.AllowedDomains("gwinnetttaxcommissioner.publicaccessnow.com"),
 	)
@@ -85,7 +75,7 @@ func downloadGwinnettAuctionData() {
 	}
 
 	//Create directory to hold pdfs
-	gwinnettDir := "tax-auction/Gwinnett"
+	gwinnettDir := filepath.Join("tax-auction", "Gwinnett")
 	if err := os.MkdirAll(gwinnettDir, os.ModePerm); err != nil {
 		log.Fatalf("Error creating directory: %v", err)
 	}
@@ -93,28 +83,25 @@ func downloadGwinnettAuctionData() {
 	// If a PDF link was found, download the PDF
 	if pastResultsURL != gwinnettTaxURL && upcomingSalesURL != gwinnettTaxURL {
 		// Create the file paths
-		upcomingSalesPDF := "/pdf/Gwinnett-Upcoming-Sales.pdf"
-		upcomingSalesFilepath := filepath.Join(gwinnettDir, upcomingSalesPDF)
-
-		pastResultsPDF := "/pdf/Gwinnett-Past-Sales.pdf"
-		pastResultsFilepath := filepath.Join(gwinnettDir, pastResultsPDF)
+		upcomingSalesPDF := filepath.Join(gwinnettDir, "pdf", "Gwinnett-Upcoming-Sales.pdf")
+		pastResultsPDF := filepath.Join(gwinnettDir, "pdf", "Gwinnett-Past-Sales.pdf")
 
 		// remove old files
-		os.Remove(pastResultsFilepath)
-		os.Remove(upcomingSalesFilepath)
+		os.Remove(upcomingSalesPDF)
+		os.Remove(pastResultsPDF)
 
 		// Download the files
-		err := downloadFile(upcomingSalesFilepath, upcomingSalesURL)
+		err := utils.DownloadFile(upcomingSalesPDF, upcomingSalesURL)
 		if err != nil {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
 
-		err = downloadFile(pastResultsFilepath, pastResultsURL)
+		err = utils.DownloadFile(pastResultsPDF, pastResultsURL)
 		if err != nil {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
 
-		runPdfExtraction("pdf-extract.py")
+		utils.RunPdfExtraction(filepath.Join("scripts", "pdf-extract.py"))
 
 		fmt.Printf("Gwinnett auction data downloaded successfully to: ./%s\n----------------------------------------------------------------------------------------------------------------------------------\n", gwinnettDir)
 	} else if pastResultsURL == gwinnettTaxURL {
@@ -123,7 +110,7 @@ func downloadGwinnettAuctionData() {
 
 		os.Remove(upcomingSalesFilepath)
 
-		err := downloadFile(upcomingSalesFilepath, upcomingSalesURL)
+		err := utils.DownloadFile(upcomingSalesFilepath, upcomingSalesURL)
 		if err != nil {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
@@ -135,98 +122,11 @@ func downloadGwinnettAuctionData() {
 
 		os.Remove(pastResultsFilepath)
 
-		err = downloadFile(pastResultsFilepath, pastResultsURL)
+		err = utils.DownloadFile(pastResultsFilepath, pastResultsURL)
 		if err != nil {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
 
 		fmt.Print("No PDF found for upcoming sales. Past sales pdf updated.\n----------------------------------------------------------------------------------------------------------------------------------\n")
-	}
-}
-
-func runPdfExtraction(script string) {
-	fmt.Println("Extracting data to csv located in ./tax-auction/Gwinnett. Please wait...")
-
-	// create csv files
-	os.Create("./tax-auction/Gwinnett/csv/Gwinnett-Past-Sales.csv")
-	os.Create("./tax-auction/Gwinnett/csv/Gwinnett-Upcoming-Sales.csv")
-
-	cmd := exec.Command("python", script)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	if err != nil {
-		slog.Error(fmt.Sprintf("Error running Python script: %v", err))
-	}
-
-	fmt.Print("Data extraction complete\n\n")
-}
-
-// Function to download a file from a URL
-func downloadFile(filepath string, url string) error {
-	// Create the file
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	// Get the data
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Check server response
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("bad status: %s", resp.Status)
-	}
-
-	// Writer the body to file
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func dbConnect() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	dsn := os.Getenv("DB_CON")
-
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Successfully connected to mango-monopoly")
-
-	rows, err := db.Query("SELECT * FROM Properties LIMIT 0")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	// Get column names
-	columns, err := rows.Columns()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Column Headers:")
-	for _, col := range columns {
-		fmt.Println(col)
 	}
 }
