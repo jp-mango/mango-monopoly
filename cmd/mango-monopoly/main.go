@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"mango-monopoly/internal/db"
 	"mango-monopoly/internal/utils"
@@ -9,8 +10,7 @@ import (
 func main() {
 	//scraper.DownloadGwinnettAuctionData()
 
-	//db.DbConnect()
-	db.ResetDB()
+	//db.ResetDB()
 
 	mango_monopoly, err := db.DbConnect()
 	if err != nil {
@@ -18,10 +18,18 @@ func main() {
 	}
 	defer mango_monopoly.Close()
 
-	gwinnettPastSales := utils.ReadCSV("Gwinnett-Past-Sales.csv")
-
-	err = db.InsertGwinnettPastSalesData(gwinnettPastSales, mango_monopoly)
+	gwinnettPastSales := utils.ReadCSV("Gwinnett-Past-Sales.csv", "Gwinnett")
+	result, err := db.InsertGwinnettPastSalesData(gwinnettPastSales, mango_monopoly)
 	if err != nil {
 		log.Fatalf("failed to insert data into db: %v", err)
 	}
+	fmt.Printf("Rows Affected: %d\n", result)
+
+	gwinnettUpcomingSales := utils.ReadCSV("Gwinnett-Upcoming-Sales.csv", "Gwinnett")
+	result, err = db.InsertGwinnettUpcomingSalesData(gwinnettUpcomingSales, mango_monopoly)
+	if err != nil {
+		log.Fatalf("failed to insert data into db: %v", err)
+	}
+	fmt.Printf("Rows Affected: %d", result)
+
 }
