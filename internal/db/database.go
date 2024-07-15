@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"mango-monopoly/internal/utils"
 	"os"
 	"os/exec"
 	"runtime"
 	"slices"
-	"strings"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -95,25 +95,28 @@ func LoadCounties(db *sql.DB) error {
 
 func InsertGwinnettPastSalesData(salesData [][]string, db *sql.DB) error {
 	header := salesData[0]
-	phrase := "tentatively schduled tax sale"
+	phrase1 := "TENTATIVELY SCHDULED TAX SALE"
+	phrase2 := "WE DID NOT HAVE A DECEMBER 5, 2023 TAX SALE"
 
 	query := `
 		INSERT INTO Past_Sales (auction_date, parcel_id, previous_owner, addr, starting_bid, tax_deed_purchaser, winning_bid_amount)
-		SELECT $1, $2, $3, $4, $5, $6, $7
+		SELECT $1, CAST ($2 AS VARCHAR), $3, $4, $5, $6, $7
 		WHERE NOT EXISTS(
-		SELECT parcel_id FROM Past_Sales WHERE parcel_id = $2
+		SELECT 1 FROM Past_Sales WHERE parcel_id = $2
 		);`
 
 	for i, value := range salesData {
-		if slices.Compare(value, header) != 0 && strings.ToLower(strings.TrimSpace(value[2])) != phrase {
-			auctionDate := value[0]
-			parcelID := value[1]
-			previousOwner := value[2]
-			addr := value[3]
-			startingBid := value[5]
-			taxDeedPurchaser := value[6]
-			winningBidAmount := value[7]
+		auctionDate := utils.UpperTrim(value[0])
+		parcelID := utils.UpperTrim(value[1])
+		previousOwner := utils.UpperTrim(value[2])
+		addr := utils.UpperTrim(value[3])
+		startingBid := utils.UpperTrim(value[5])
+		taxDeedPurchaser := utils.UpperTrim(value[6])
+		winningBidAmount := utils.UpperTrim(value[7])
 
+		if slices.Compare(value, header) == 0 || previousOwner == phrase1 || previousOwner == phrase2 {
+			continue
+		} else {
 			_, err := db.Exec(query, auctionDate, parcelID, previousOwner, addr, startingBid, taxDeedPurchaser, winningBidAmount)
 			if err != nil {
 				return fmt.Errorf("error inserting data at index %d: %v", i, err)
