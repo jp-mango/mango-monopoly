@@ -27,18 +27,9 @@ CREATE TABLE IF NOT EXISTS Upcoming_Sales (upcoming_sale_id SERIAL PRIMARY KEY,
 
 CREATE TABLE IF NOT EXISTS Past_Sales (sale_id SERIAL PRIMARY KEY,
 																																								auction_date DATE NOT NULL,
-																																								parcel_id VARCHAR(150) NOT NULL,
+																																								parcel_id VARCHAR(150),
 																																								previous_owner VARCHAR(150),
 																																								addr TEXT, starting_bid VARCHAR(20),
 																																								tax_deed_purchaser VARCHAR(100),
 																																								winning_bid_amount VARCHAR(20));
-
-
-ALTER TABLE Past_Sales ADD CONSTRAINT fk_parcel_id
-FOREIGN KEY (parcel_id) REFERENCES Properties (parcel_id);
-
-
-ALTER TABLE Past_Sales ADD CONSTRAINT fk_address
-FOREIGN KEY (addr) REFERENCES Properties (situs) ON
-UPDATE CASCADE;
 
