@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 // Function to download a file from a URL
@@ -76,4 +77,8 @@ func ReadCSV(filename string) [][]string {
 	}
 
 	return records
+}
+
+func UpperTrim(word string) string {
+	return strings.ToUpper(strings.TrimSpace(word))
 }
