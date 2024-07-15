@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS Counties (county_id SERIAL PRIMARY KEY,
 
 
 CREATE TABLE IF NOT EXISTS Properties (property_id SERIAL PRIMARY KEY,
-																																								situs TEXT NOT NULL,
+																																								situs TEXT NOT NULL UNIQUE,
 																																								county_id INT NOT NULL,
 																																								parcel_id VARCHAR(150) NOT NULL UNIQUE,
 																																								property_type TEXT, land_value NUMERIC, building_value NUMERIC, fair_market_value NUMERIC, lot_size NUMERIC, square_footage NUMERIC, bedrooms INT, bathrooms INT, year_built INT,
@@ -26,9 +26,19 @@ CREATE TABLE IF NOT EXISTS Upcoming_Sales (upcoming_sale_id SERIAL PRIMARY KEY,
 
 
 CREATE TABLE IF NOT EXISTS Past_Sales (sale_id SERIAL PRIMARY KEY,
-																																								parcel_id VARCHAR(150) NOT NULL,
 																																								auction_date DATE NOT NULL,
-																																								starting_bid NUMERIC, tax_deed_purchaser VARCHAR(100),
-																																								winning_bid_amount NUMERIC,
-																																							FOREIGN KEY (parcel_id) REFERENCES Properties (parcel_id));
+																																								parcel_id VARCHAR(150) NOT NULL,
+																																								previous_owner VARCHAR(150),
+																																								addr TEXT, starting_bid VARCHAR(20),
+																																								tax_deed_purchaser VARCHAR(100),
+																																								winning_bid_amount VARCHAR(20));
+
+
+ALTER TABLE Past_Sales ADD CONSTRAINT fk_parcel_id
+FOREIGN KEY (parcel_id) REFERENCES Properties (parcel_id);
+
+
+ALTER TABLE Past_Sales ADD CONSTRAINT fk_address
+FOREIGN KEY (addr) REFERENCES Properties (situs) ON
+UPDATE CASCADE;
 
