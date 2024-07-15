@@ -20,14 +20,14 @@ CREATE TABLE IF NOT EXISTS Property_Images (image_id SERIAL PRIMARY KEY,
 
 CREATE TABLE IF NOT EXISTS Upcoming_Sales (upcoming_sale_id SERIAL PRIMARY KEY,
 																																												parcel_id VARCHAR(150) NOT NULL,
-																																												auction_date DATE NOT NULL,
-																																												amount_due NUMERIC,
-																																											FOREIGN KEY (parcel_id) REFERENCES Properties (parcel_id));
+																																												"owner" VARCHAR(100),
+																																												auction_date DATE, "address" VARCHAR(100),
+																																												amount_due VARCHAR(20));
 
 
 CREATE TABLE IF NOT EXISTS Past_Sales (sale_id SERIAL PRIMARY KEY,
 																																								auction_date DATE NOT NULL,
-																																								parcel_id VARCHAR(150),
+																																								parcel_id VARCHAR(150) NOT NULL,
 																																								previous_owner VARCHAR(150),
 																																								addr TEXT, starting_bid VARCHAR(20),
 																																								tax_deed_purchaser VARCHAR(100),
