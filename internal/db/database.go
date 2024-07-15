@@ -93,10 +93,11 @@ func LoadCounties(db *sql.DB) error {
 	return nil
 }
 
-func InsertGwinnettPastSalesData(salesData [][]string, db *sql.DB) error {
+func InsertGwinnettPastSalesData(salesData [][]string, db *sql.DB) (rowsEffected int64, err error) {
 	header := salesData[0]
 	phrase1 := "TENTATIVELY SCHDULED TAX SALE"
 	phrase2 := "WE DID NOT HAVE A DECEMBER 5, 2023 TAX SALE"
+	var totalRowsAffected int64
 
 	query := `
 		INSERT INTO Past_Sales (auction_date, parcel_id, previous_owner, addr, starting_bid, tax_deed_purchaser, winning_bid_amount)
@@ -116,14 +117,55 @@ func InsertGwinnettPastSalesData(salesData [][]string, db *sql.DB) error {
 
 		if slices.Compare(value, header) == 0 || previousOwner == phrase1 || previousOwner == phrase2 {
 			continue
-		} else {
-			_, err := db.Exec(query, auctionDate, parcelID, previousOwner, addr, startingBid, taxDeedPurchaser, winningBidAmount)
-			if err != nil {
-				return fmt.Errorf("error inserting data at index %d: %v", i, err)
-			}
 		}
+
+		result, err := db.Exec(query, auctionDate, parcelID, previousOwner, addr, startingBid, taxDeedPurchaser, winningBidAmount)
+		if err != nil {
+			return 0, fmt.Errorf("error inserting data at index %d: %v", i, err)
+		}
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			return totalRowsAffected, fmt.Errorf("error retrieving rows affected at index %d: %v", i, err)
+		}
+		totalRowsAffected += rowsAffected
 	}
 
 	fmt.Println("Successfully inserted gwinnett past auction data to db.")
-	return nil
+	return totalRowsAffected, nil
+}
+
+func InsertGwinnettUpcomingSalesData(salesData [][]string, db *sql.DB) (rowsEffected int64, err error) {
+	var totalRowsAffected int64
+
+	query := `
+		INSERT INTO Upcoming_Sales (parcel_id, owner, address, amount_due)
+		SELECT CAST ($1 AS VARCHAR), $2, $3, $4
+		WHERE NOT EXISTS(
+		SELECT 1 FROM Upcoming_Sales WHERE parcel_id = $1
+		);`
+
+	for i, value := range salesData {
+		parcelID := utils.UpperTrim(value[0])
+		owner := utils.UpperTrim(value[1])
+		address := utils.UpperTrim(value[2])
+		owed := utils.UpperTrim(value[3])
+
+		if i == 0 {
+			//skips header
+			continue
+		}
+
+		result, err := db.Exec(query, parcelID, owner, address, owed)
+		if err != nil {
+			return 0, fmt.Errorf("error inserting at index %d: %v", i, err)
+		}
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			return totalRowsAffected, fmt.Errorf("error retrieving rows affected at index %d: %v", i, err)
+		}
+		totalRowsAffected += rowsAffected
+	}
+
+	fmt.Println("Successfully inserted gwinnett upcoming auction data to db.")
+	return totalRowsAffected, nil
 }
