@@ -61,8 +61,8 @@ func RunPdfExtraction(scriptPath string) {
 	fmt.Print("Data extraction complete\n\n")
 }
 
-func ReadCSV(filename string) [][]string {
-	dataPath := filepath.Join("tax-auction/Gwinnett/csv", filename)
+func ReadCSV(filename string, county string) [][]string {
+	dataPath := filepath.Join(fmt.Sprintf("tax-auction/%s/csv", county), filename)
 
 	file, err := os.Open(dataPath)
 	if err != nil {
