@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS Upcoming_Sales (upcoming_sale_id SERIAL PRIMARY KEY,
 																																												parcel_id VARCHAR(150) NOT NULL,
 																																												"owner" VARCHAR(100),
 																																												auction_date DATE, "address" VARCHAR(100),
-																																												amount_due VARCHAR(20));
+																																												amount_due NUMERIC);
 
 
 CREATE TABLE IF NOT EXISTS Past_Sales (sale_id SERIAL PRIMARY KEY,

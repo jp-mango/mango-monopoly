@@ -145,14 +145,17 @@ func InsertGwinnettUpcomingSalesData(salesData [][]string, db *sql.DB) (rowsEffe
 		);`
 
 	for i, value := range salesData {
-		parcelID := utils.UpperTrim(value[0])
-		owner := utils.UpperTrim(value[1])
-		address := utils.UpperTrim(value[2])
-		owed := utils.UpperTrim(value[3])
-
 		if i == 0 {
 			//skips header
 			continue
+		}
+
+		parcelID := utils.UpperTrim(value[0])
+		owner := utils.UpperTrim(value[1])
+		address := utils.UpperTrim(value[2])
+		owed, err := utils.FormatMoney(utils.UpperTrim(value[3]))
+		if err != nil {
+			return 0, fmt.Errorf("error formatting string value at index %d: %v", i, err)
 		}
 
 		result, err := db.Exec(query, parcelID, owner, address, owed)
