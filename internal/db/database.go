@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"mango-monopoly/internal/scraper"
 	"mango-monopoly/internal/utils"
 	"os"
 	"os/exec"
@@ -97,6 +98,7 @@ func InsertGwinnettPastSalesData(salesData [][]string, db *sql.DB) (rowsEffected
 	header := salesData[0]
 	phrase1 := "TENTATIVELY SCHDULED TAX SALE"
 	phrase2 := "WE DID NOT HAVE A DECEMBER 5, 2023 TAX SALE"
+	phrase3 := "NO BID"
 	var totalRowsAffected int64
 
 	query := `
@@ -107,18 +109,46 @@ func InsertGwinnettPastSalesData(salesData [][]string, db *sql.DB) (rowsEffected
 		);`
 
 	for i, value := range salesData {
+		if slices.Compare(value, header) == 0 {
+			// Skip header row
+			continue
+		}
+
 		auctionDate := utils.UpperTrim(value[0])
 		parcelID := utils.UpperTrim(value[1])
 		previousOwner := utils.UpperTrim(value[2])
 		addr := utils.UpperTrim(value[3])
-		startingBid := utils.UpperTrim(value[5])
+		startingBidStr := utils.UpperTrim(value[5])
 		taxDeedPurchaser := utils.UpperTrim(value[6])
-		winningBidAmount := utils.UpperTrim(value[7])
+		winningBidAmountStr := utils.UpperTrim(value[7])
 
-		if slices.Compare(value, header) == 0 || previousOwner == phrase1 || previousOwner == phrase2 {
+		// Skip rows based on specific phrases for previousOwner
+		if previousOwner == phrase1 || previousOwner == phrase2 {
 			continue
 		}
 
+		var startingBid, winningBidAmount float64
+		var err error
+
+		// Handle "NO BID" separately for startingBid
+		if startingBidStr == phrase3 {
+			startingBid = 0
+		} else {
+			startingBid, err = utils.FormatMoney(startingBidStr)
+			if err != nil {
+				return 0, fmt.Errorf("error converting string to float at index %d: %v", i, err)
+			}
+		}
+
+		// Handle "NO BID" separately for winningBidAmount
+		if winningBidAmountStr == phrase3 {
+			winningBidAmount = 0
+		} else {
+			winningBidAmount, err = utils.FormatMoney(winningBidAmountStr)
+			if err != nil {
+				return 0, fmt.Errorf("error converting string to float at index %d: %v", i, err)
+			}
+		}
 		result, err := db.Exec(query, auctionDate, parcelID, previousOwner, addr, startingBid, taxDeedPurchaser, winningBidAmount)
 		if err != nil {
 			return 0, fmt.Errorf("error inserting data at index %d: %v", i, err)
@@ -136,10 +166,15 @@ func InsertGwinnettPastSalesData(salesData [][]string, db *sql.DB) (rowsEffected
 
 func InsertGwinnettUpcomingSalesData(salesData [][]string, db *sql.DB) (rowsEffected int64, err error) {
 	var totalRowsAffected int64
+	scraper.PullGwinnettAuctionData()
+	auction_date, err := utils.StringToDate(scraper.GwinnettUpcomingAuctions[0])
+	if err != nil {
+		return 0, fmt.Errorf("error converting string to date: %v", err)
+	}
 
 	query := `
-		INSERT INTO Upcoming_Sales (parcel_id, owner, address, amount_due)
-		SELECT CAST ($1 AS VARCHAR), $2, $3, $4
+		INSERT INTO Upcoming_Sales (parcel_id, owner, auction_date,address, amount_due)
+		SELECT CAST ($1 AS VARCHAR), $2, $3, $4, $5
 		WHERE NOT EXISTS(
 		SELECT 1 FROM Upcoming_Sales WHERE parcel_id = $1
 		);`
@@ -158,7 +193,7 @@ func InsertGwinnettUpcomingSalesData(salesData [][]string, db *sql.DB) (rowsEffe
 			return 0, fmt.Errorf("error formatting string value at index %d: %v", i, err)
 		}
 
-		result, err := db.Exec(query, parcelID, owner, address, owed)
+		result, err := db.Exec(query, parcelID, owner, auction_date, address, owed)
 		if err != nil {
 			return 0, fmt.Errorf("error inserting at index %d: %v", i, err)
 		}
