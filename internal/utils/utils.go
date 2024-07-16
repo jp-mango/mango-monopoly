@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -81,4 +82,10 @@ func ReadCSV(filename string, county string) [][]string {
 
 func UpperTrim(word string) string {
 	return strings.ToUpper(strings.TrimSpace(word))
+}
+
+func FormatMoney(value string) (float64, error) {
+	cleaned := (strings.Replace(strings.Replace(value, "$", "", -1), ",", "", -1))
+
+	return strconv.ParseFloat(cleaned, 64)
 }
