@@ -49,6 +49,8 @@ func ResetDB() {
 		log.Fatal("DB_CON environment variable is not set")
 	}
 
+	fmt.Println("Resetting database. Please wait...")
+
 	commands := []string{
 		fmt.Sprintf("migrate -path ./migrations -database %s force 1", dsn),
 		fmt.Sprintf("migrate -path ./migrations -database %s down -all", dsn),
@@ -74,6 +76,9 @@ func ResetDB() {
 			log.Fatalf("Error resetting db: %v", err)
 		}
 	}
+
+	fmt.Println("Database reset.")
+	fmt.Println()
 }
 
 func LoadCounties(db *sql.DB) error {
@@ -166,7 +171,6 @@ func InsertGwinnettPastSalesData(salesData [][]string, db *sql.DB) (rowsEffected
 
 func InsertGwinnettUpcomingSalesData(salesData [][]string, db *sql.DB) (rowsEffected int64, err error) {
 	var totalRowsAffected int64
-	scraper.PullGwinnettAuctionData()
 	auction_date, err := utils.StringToDate(scraper.GwinnettUpcomingAuctions[0])
 	if err != nil {
 		return 0, fmt.Errorf("error converting string to date: %v", err)
