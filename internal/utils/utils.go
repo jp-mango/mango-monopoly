@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Function to download a file from a URL
@@ -88,4 +89,13 @@ func FormatMoney(value string) (float64, error) {
 	cleaned := (strings.Replace(strings.Replace(value, "$", "", -1), ",", "", -1))
 
 	return strconv.ParseFloat(cleaned, 64)
+}
+
+func StringToDate(date string) (time.Time, error) {
+	t, err := time.Parse("January 2, 2006", date)
+	if err != nil {
+		return t, fmt.Errorf("unable to convert string to date")
+	}
+
+	return t, nil
 }
