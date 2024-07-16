@@ -13,14 +13,15 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func DownloadGwinnettAuctionData() {
+var gwinnettTaxURL string = "https://gwinnetttaxcommissioner.publicaccessnow.com/PropertyTax/DelinquentTax/TaxLiensTaxSales.aspx"
+var GwinnettUpcomingAuctions []string
+var upcomingSalesURL string
+var pastResultsURL string
+
+func PullGwinnettAuctionData() {
 	c := colly.NewCollector(
 		colly.AllowedDomains("gwinnetttaxcommissioner.publicaccessnow.com"),
 	)
-
-	var upcomingSalesURL string
-	var pastResultsURL string
-	var upcomingAuctions []string
 
 	// Select div - #: ID, .:Class
 	// Gwinnett's upcoming sales
@@ -39,7 +40,7 @@ func DownloadGwinnettAuctionData() {
 		for _, date := range dates {
 			trimmedDate := strings.TrimSpace(date)
 			if trimmedDate != "" {
-				upcomingAuctions = append(upcomingAuctions, trimmedDate)
+				GwinnettUpcomingAuctions = append(GwinnettUpcomingAuctions, trimmedDate)
 			}
 		}
 	})
@@ -50,17 +51,16 @@ func DownloadGwinnettAuctionData() {
 	})
 
 	// Visit the page to scrape the link
-	gwinnettTaxURL := "https://gwinnetttaxcommissioner.publicaccessnow.com/PropertyTax/DelinquentTax/TaxLiensTaxSales.aspx"
 	err := c.Visit(gwinnettTaxURL)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Error visiting the page: %v", err))
 	}
 
 	//Print upcoming auctions
-	if len(upcomingAuctions) > 0 {
+	if len(GwinnettUpcomingAuctions) > 0 {
 		fmt.Printf("Upcoming Auction Dates\n")
 		fmt.Println("------------------")
-		for _, date := range upcomingAuctions {
+		for _, date := range GwinnettUpcomingAuctions {
 			auctionDate, err := time.Parse("January 2, 2006", date)
 			if err != nil {
 				slog.Error(fmt.Sprintf("Error parsing date '%s': %v", date, err))
@@ -74,6 +74,9 @@ func DownloadGwinnettAuctionData() {
 		fmt.Println()
 	}
 
+}
+
+func DownloadGwinnettAuctionData() {
 	//Create directory to hold pdfs
 	gwinnettDir := filepath.Join("tax-auction", "Gwinnett")
 	if err := os.MkdirAll(gwinnettDir, os.ModePerm); err != nil {
@@ -103,7 +106,7 @@ func DownloadGwinnettAuctionData() {
 
 		utils.RunPdfExtraction(filepath.Join("scripts", "pdf-extract.py"))
 
-		fmt.Printf("Gwinnett auction data downloaded successfully to: ./%s\n----------------------------------------------------------------------------------------------------------------------------------\n", gwinnettDir)
+		fmt.Printf("Gwinnett auction data downloaded successfully to: .\\%s\n----------------------------------------------------------------------------------------------------------------------------------\n", gwinnettDir)
 	} else if pastResultsURL == gwinnettTaxURL {
 		upcomingSalesPDF := "/pdf/Gwinnett-Upcoming-Sales.pdf"
 		upcomingSalesFilepath := filepath.Join(gwinnettDir, upcomingSalesPDF)
@@ -122,7 +125,7 @@ func DownloadGwinnettAuctionData() {
 
 		os.Remove(pastResultsFilepath)
 
-		err = utils.DownloadFile(pastResultsFilepath, pastResultsURL)
+		err := utils.DownloadFile(pastResultsFilepath, pastResultsURL)
 		if err != nil {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
