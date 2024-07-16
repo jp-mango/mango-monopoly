@@ -29,7 +29,6 @@ CREATE TABLE IF NOT EXISTS Past_Sales (sale_id SERIAL PRIMARY KEY,
 																																								auction_date DATE NOT NULL,
 																																								parcel_id VARCHAR(150) NOT NULL,
 																																								previous_owner VARCHAR(150),
-																																								addr TEXT, starting_bid VARCHAR(20),
-																																								tax_deed_purchaser VARCHAR(100),
-																																								winning_bid_amount VARCHAR(20));
+																																								addr TEXT, starting_bid NUMERIC, tax_deed_purchaser VARCHAR(100),
+																																								winning_bid_amount NUMERIC);
 
