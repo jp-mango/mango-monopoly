@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"log"
 	"mango-monopoly/internal/db"
+	"mango-monopoly/internal/scraper"
 	"mango-monopoly/internal/utils"
 )
 
 func main() {
-	//scraper.DownloadGwinnettAuctionData()
+	scraper.PullGwinnettAuctionData()
+	scraper.DownloadGwinnettAuctionData()
 
 	//db.ResetDB()
 
@@ -30,6 +32,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to insert data into db: %v", err)
 	}
-	fmt.Printf("Rows Affected: %d", result)
-
+	fmt.Printf("Rows Affected: %d\n", result)
 }
