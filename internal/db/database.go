@@ -49,7 +49,7 @@ func ResetDB() {
 		log.Fatal("DB_CON environment variable is not set")
 	}
 
-	fmt.Println("Resetting database. Please wait...")
+	fmt.Printf("Resetting database. Please wait...\n\n")
 
 	commands := []string{
 		fmt.Sprintf("migrate -path ./migrations -database %s force 1", dsn),
@@ -77,7 +77,7 @@ func ResetDB() {
 		}
 	}
 
-	fmt.Println("Database reset.")
+	fmt.Println("\nDatabase reset.")
 	fmt.Println()
 }
 
@@ -185,7 +185,6 @@ func InsertGwinnettUpcomingSalesData(salesData [][]string, db *sql.DB) (rowsEffe
 
 	for i, value := range salesData {
 		if i == 0 {
-			//skips header
 			continue
 		}
 
@@ -209,5 +208,68 @@ func InsertGwinnettUpcomingSalesData(salesData [][]string, db *sql.DB) (rowsEffe
 	}
 
 	fmt.Println("Successfully inserted gwinnett upcoming auction data to db.")
+	return totalRowsAffected, nil
+}
+
+func UpdatePropertiesTable(db *sql.DB) (int64, error) {
+	var totalRowsAffected int64
+	query := `SELECT parcel_id FROM Properties;`
+	var parcel_id string
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return 0, err
+	}
+
+	for rows.Next() {
+		if err := rows.Scan(&parcel_id); err != nil {
+			return 0, err
+		}
+
+		details := scraper.TaxAssessorsOfficePull(parcel_id)
+
+		updateQuery := `
+			UPDATE Properties
+			SET situs = $1,
+				county_id = 1,
+				property_type = $2,
+				land_value = $3,
+				building_value = $4,
+				fair_market_value = $5,
+				lot_size = $6,
+				tax_assessor_url = $7
+			WHERE parcel_id = $8;
+		`
+		landValue, err := utils.FormatMoney(details.LandValue)
+		if err != nil {
+			return 0, fmt.Errorf("error formatting land_value %s: %v", details.LandValue, err)
+		}
+
+		buildingValue, err := utils.FormatMoney(details.BuildingValue)
+		if err != nil {
+			return 0, fmt.Errorf("error formatting building_value %s: %v", details.LandValue, err)
+		}
+
+		fairMarketValue, err := utils.FormatMoney(details.FairMarketValue)
+		if err != nil {
+			return 0, fmt.Errorf("error formatting fair_market_value %s: %v", details.LandValue, err)
+		}
+
+		result, err := db.Exec(updateQuery, details.Address, details.PropertyType, landValue, buildingValue, fairMarketValue, details.LotSize, details.TaxAssessorURL, parcel_id)
+		if err != nil {
+			return 0, fmt.Errorf("error updating row for parcel_id %s: %v", parcel_id, err)
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			return totalRowsAffected, fmt.Errorf("error retrieving rows affected: %v", err)
+		}
+		totalRowsAffected += rowsAffected
+	}
+
+	if err := rows.Err(); err != nil {
+		return 0, fmt.Errorf("error during rows iteration: %v", err)
+	}
+
 	return totalRowsAffected, nil
 }
