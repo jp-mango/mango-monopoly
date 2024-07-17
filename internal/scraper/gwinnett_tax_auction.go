@@ -59,7 +59,7 @@ func PullGwinnettAuctionData() {
 	//Print upcoming auctions
 	if len(GwinnettUpcomingAuctions) > 0 {
 		fmt.Printf("Upcoming Auction Dates\n")
-		fmt.Println("------------------")
+		fmt.Println("----------------------")
 		for _, date := range GwinnettUpcomingAuctions {
 			auctionDate, err := time.Parse("January 2, 2006", date)
 			if err != nil {
@@ -106,7 +106,7 @@ func DownloadGwinnettAuctionData() {
 
 		utils.RunPdfExtraction(filepath.Join("scripts", "pdf-extract.py"))
 
-		fmt.Printf("Gwinnett auction data downloaded successfully to: .\\%s\n----------------------------------------------------------------------------------------------------------------------------------\n", gwinnettDir)
+		fmt.Printf("Gwinnett auction data downloaded successfully to: .\\%s\n------------------------------------------------------------------------------\n", gwinnettDir)
 	} else if pastResultsURL == gwinnettTaxURL {
 		upcomingSalesPDF := "/pdf/Gwinnett-Upcoming-Sales.pdf"
 		upcomingSalesFilepath := filepath.Join(gwinnettDir, upcomingSalesPDF)
@@ -118,7 +118,7 @@ func DownloadGwinnettAuctionData() {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
 
-		fmt.Print("No PDF found for past sale history. Upcoming sales pdf updated.\n----------------------------------------------------------------------------------------------------------------------------------\n")
+		fmt.Print("No PDF found for past sale history. Upcoming sales pdf updated.\n------------------------------------------------------------------------------\n")
 	} else if upcomingSalesURL == gwinnettTaxURL {
 		pastResultsPDF := "Gwinnett-Past-Sales.pdf"
 		pastResultsFilepath := filepath.Join(gwinnettDir, pastResultsPDF)
@@ -130,6 +130,54 @@ func DownloadGwinnettAuctionData() {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
 
-		fmt.Print("No PDF found for upcoming sales. Past sales pdf updated.\n----------------------------------------------------------------------------------------------------------------------------------\n")
+		fmt.Print("No PDF found for upcoming sales. Past sales pdf updated.\n------------------------------------------------------------------------------\n")
 	}
+}
+
+type GwinnettPropertyDetail struct {
+	Address         string
+	CountyID        int
+	PropertyType    string
+	LandValue       string
+	BuildingValue   string
+	FairMarketValue string
+	LotSize         float64
+	TaxAssessorURL  string
+}
+
+func TaxAssessorsOfficePull(parcel_id string) GwinnettPropertyDetail {
+	// Instantiate the collector
+	c := colly.NewCollector()
+
+	// Define the URL of the search form
+	propertyURL := fmt.Sprintf("https://gwinnettassessor.manatron.com/IWantTo/PropertyGISSearch/PropertyDetail.aspx?p=%s&a=279919", utils.ASCIISpace(parcel_id))
+
+	fmt.Println(propertyURL)
+	// Handle the response after form submission
+	c.OnResponse(func(r *colly.Response) {
+		fmt.Println("page visited")
+	})
+
+	details := GwinnettPropertyDetail{}
+
+	c.OnHTML("#dnn_ctr1385_ContentPane", func(e *colly.HTMLElement) {
+		details.Address = e.ChildText("th:contains('Address') + td")
+		details.PropertyType = e.ChildText("th:contains('Property Class') + td")
+		details.LotSize, _ = utils.FormatMoney((e.ChildText("th:contains('Deed Acres') + td")))
+		details.TaxAssessorURL = propertyURL
+	})
+
+	c.OnHTML("#dnn_ctr1386_ContentPane", func(e *colly.HTMLElement) {
+		details.LandValue = e.ChildText("th:contains('Land Val') + td")
+		details.BuildingValue = e.ChildText("th:contains('Imp Val') + td")
+		details.FairMarketValue = e.ChildText("th:contains('Total Appr') + td")
+	})
+
+	// Visit the property URL
+	err := c.Visit(propertyURL)
+	if err != nil {
+		log.Fatal("Error visiting the page: ", err)
+	}
+
+	return details
 }
