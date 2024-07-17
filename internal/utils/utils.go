@@ -99,3 +99,7 @@ func StringToDate(date string) (time.Time, error) {
 
 	return t, nil
 }
+
+func ASCIISpace(s string) string {
+	return strings.TrimSpace(strings.ReplaceAll(s, " ", "%20"))
+}
