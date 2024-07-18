@@ -47,7 +47,7 @@ func PullGwinnettAuctionData() {
 
 	// On request log the URL
 	c.OnRequest(func(r *colly.Request) {
-		log.Printf("Visiting: %s\n\n", r.URL.String())
+		log.Printf("Pulling Gwinnett auction data from: %s\n\n", r.URL.String())
 	})
 
 	// Visit the page to scrape the link
@@ -143,6 +143,7 @@ type GwinnettPropertyDetail struct {
 	FairMarketValue string
 	LotSize         float64
 	TaxAssessorURL  string
+	Updates         int64
 }
 
 func TaxAssessorsOfficePull(parcel_id string) GwinnettPropertyDetail {
@@ -152,13 +153,11 @@ func TaxAssessorsOfficePull(parcel_id string) GwinnettPropertyDetail {
 	// Define the URL of the search form
 	propertyURL := fmt.Sprintf("https://gwinnettassessor.manatron.com/IWantTo/PropertyGISSearch/PropertyDetail.aspx?p=%s&a=279919", utils.ASCIISpace(parcel_id))
 
-	fmt.Println(propertyURL)
+	details := GwinnettPropertyDetail{}
 	// Handle the response after form submission
 	c.OnResponse(func(r *colly.Response) {
-		fmt.Println("page visited")
+		details.Updates++
 	})
-
-	details := GwinnettPropertyDetail{}
 
 	c.OnHTML("#dnn_ctr1385_ContentPane", func(e *colly.HTMLElement) {
 		details.Address = e.ChildText("th:contains('Address') + td")
