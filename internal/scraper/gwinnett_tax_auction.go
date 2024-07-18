@@ -15,8 +15,8 @@ import (
 
 var gwinnettTaxURL string = "https://gwinnetttaxcommissioner.publicaccessnow.com/PropertyTax/DelinquentTax/TaxLiensTaxSales.aspx"
 var GwinnettUpcomingAuctions []string
-var upcomingSalesURL string
-var pastResultsURL string
+var gwinnettUpcomingSalesURL string
+var gwinnettPastResultsURL string
 
 func PullGwinnettAuctionData() {
 	c := colly.NewCollector(
@@ -26,12 +26,12 @@ func PullGwinnettAuctionData() {
 	// Select div - #: ID, .:Class
 	// Gwinnett's upcoming sales
 	c.OnHTML("#dnn_ctr1334_ModuleContent a", func(us *colly.HTMLElement) {
-		upcomingSalesURL = us.Request.AbsoluteURL(us.Attr("href"))
+		gwinnettUpcomingSalesURL = us.Request.AbsoluteURL(us.Attr("href"))
 	})
 
 	// Gwinnett's past results
 	c.OnHTML("#dnn_ctr1341_ContentPane a", func(pr *colly.HTMLElement) {
-		pastResultsURL = pr.Request.AbsoluteURL(pr.Attr("href"))
+		gwinnettPastResultsURL = pr.Request.AbsoluteURL(pr.Attr("href"))
 	})
 
 	//Upcoming auction dates
@@ -84,7 +84,7 @@ func DownloadGwinnettAuctionData() {
 	}
 
 	// If a PDF link was found, download the PDF
-	if pastResultsURL != gwinnettTaxURL && upcomingSalesURL != gwinnettTaxURL {
+	if gwinnettPastResultsURL != gwinnettTaxURL && gwinnettUpcomingSalesURL != gwinnettTaxURL {
 		// Create the file paths
 		upcomingSalesPDF := filepath.Join(gwinnettDir, "pdf", "Gwinnett-Upcoming-Sales.pdf")
 		pastResultsPDF := filepath.Join(gwinnettDir, "pdf", "Gwinnett-Past-Sales.pdf")
@@ -94,38 +94,38 @@ func DownloadGwinnettAuctionData() {
 		os.Remove(pastResultsPDF)
 
 		// Download the files
-		err := utils.DownloadFile(upcomingSalesPDF, upcomingSalesURL)
+		err := utils.DownloadFile(upcomingSalesPDF, gwinnettUpcomingSalesURL)
 		if err != nil {
-			log.Fatalf("Error downloading upcoming sales: %v", err)
+			log.Fatalf("Error downloading Gwinnett's upcoming sales: %v", err)
 		}
 
-		err = utils.DownloadFile(pastResultsPDF, pastResultsURL)
+		err = utils.DownloadFile(pastResultsPDF, gwinnettPastResultsURL)
 		if err != nil {
-			log.Fatalf("Error downloading upcoming sales: %v", err)
+			log.Fatalf("Error downloading Gwinnett's upcoming sales: %v", err)
 		}
 
-		utils.RunPdfExtraction(filepath.Join("scripts", "pdf-extract.py"))
+		utils.RunPdfExtraction(filepath.Join("scripts", "gwinnett-pdf-extract.py"), "Gwinnett")
 
 		fmt.Printf("Gwinnett auction data downloaded successfully to: .\\%s\n------------------------------------------------------------------------------\n", gwinnettDir)
-	} else if pastResultsURL == gwinnettTaxURL {
+	} else if gwinnettPastResultsURL == gwinnettTaxURL {
 		upcomingSalesPDF := "/pdf/Gwinnett-Upcoming-Sales.pdf"
 		upcomingSalesFilepath := filepath.Join(gwinnettDir, upcomingSalesPDF)
 
 		os.Remove(upcomingSalesFilepath)
 
-		err := utils.DownloadFile(upcomingSalesFilepath, upcomingSalesURL)
+		err := utils.DownloadFile(upcomingSalesFilepath, gwinnettUpcomingSalesURL)
 		if err != nil {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
 
 		fmt.Print("No PDF found for past sale history. Upcoming sales pdf updated.\n------------------------------------------------------------------------------\n")
-	} else if upcomingSalesURL == gwinnettTaxURL {
+	} else if gwinnettUpcomingSalesURL == gwinnettTaxURL {
 		pastResultsPDF := "Gwinnett-Past-Sales.pdf"
 		pastResultsFilepath := filepath.Join(gwinnettDir, pastResultsPDF)
 
 		os.Remove(pastResultsFilepath)
 
-		err := utils.DownloadFile(pastResultsFilepath, pastResultsURL)
+		err := utils.DownloadFile(pastResultsFilepath, gwinnettPastResultsURL)
 		if err != nil {
 			log.Fatalf("Error downloading upcoming sales: %v", err)
 		}
@@ -146,7 +146,7 @@ type GwinnettPropertyDetail struct {
 	Updates         int64
 }
 
-func TaxAssessorsOfficePull(parcel_id string) GwinnettPropertyDetail {
+func GwinnettTaxAssessorsOfficePull(parcel_id string) GwinnettPropertyDetail {
 	// Instantiate the collector
 	c := colly.NewCollector()
 
