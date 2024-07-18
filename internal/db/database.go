@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"runtime"
 	"slices"
+	"sync"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -211,21 +212,9 @@ func InsertGwinnettUpcomingSalesData(salesData [][]string, db *sql.DB) (rowsEffe
 	return totalRowsAffected, nil
 }
 
-func UpdatePropertiesTable(db *sql.DB) (int64, error) {
-	var totalRowsAffected int64
-	query := `SELECT parcel_id FROM Properties;`
-	var parcel_id string
-
-	rows, err := db.Query(query)
-	if err != nil {
-		return 0, err
-	}
-
-	for rows.Next() {
-		if err := rows.Scan(&parcel_id); err != nil {
-			return 0, err
-		}
-
+func gwinnettTaxWorker(parcelIDs <-chan string, results chan<- int64, db *sql.DB, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for parcel_id := range parcelIDs {
 		details := scraper.TaxAssessorsOfficePull(parcel_id)
 
 		updateQuery := `
@@ -238,38 +227,86 @@ func UpdatePropertiesTable(db *sql.DB) (int64, error) {
 				fair_market_value = $5,
 				lot_size = $6,
 				tax_assessor_url = $7
-			WHERE parcel_id = $8;
+			WHERE parcel_id = $8
+			AND tax_assessor_url IS NULL;
 		`
 		landValue, err := utils.FormatMoney(details.LandValue)
 		if err != nil {
-			return 0, fmt.Errorf("error formatting land_value %s: %v", details.LandValue, err)
+			log.Println("error formatting land_value", "value", details.LandValue, "error", err)
+			results <- 0
+			continue
 		}
 
 		buildingValue, err := utils.FormatMoney(details.BuildingValue)
 		if err != nil {
-			return 0, fmt.Errorf("error formatting building_value %s: %v", details.LandValue, err)
+			log.Println("error formatting building_value", "value", details.BuildingValue, "error", err)
+			results <- 0
+			continue
 		}
 
 		fairMarketValue, err := utils.FormatMoney(details.FairMarketValue)
 		if err != nil {
-			return 0, fmt.Errorf("error formatting fair_market_value %s: %v", details.LandValue, err)
+			log.Println("error formatting fair_market_value", "value", details.FairMarketValue, "error", err)
+			results <- 0
+			continue
 		}
 
-		result, err := db.Exec(updateQuery, details.Address, details.PropertyType, landValue, buildingValue, fairMarketValue, details.LotSize, details.TaxAssessorURL, parcel_id)
+		_, err = db.Exec(updateQuery, details.Address, details.PropertyType, landValue, buildingValue, fairMarketValue, details.LotSize, details.TaxAssessorURL, parcel_id)
 		if err != nil {
-			return 0, fmt.Errorf("error updating row for parcel_id %s: %v", parcel_id, err)
+			log.Println("error updating row", "parcel_id", parcel_id, "error", err)
+			results <- 0
+			continue
 		}
+		results <- details.Updates
+	}
+}
 
-		rowsAffected, err := result.RowsAffected()
-		if err != nil {
-			return totalRowsAffected, fmt.Errorf("error retrieving rows affected: %v", err)
+func UpdatePropertiesTable_Tax(db *sql.DB) (int64, error) {
+	var totalRequests int64
+	query := `SELECT parcel_id FROM Properties WHERE tax_assessor_url IS NULL;`
+	var parcel_id string
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+
+	parcelIDs := make(chan string, 100)
+	results := make(chan int64, 100)
+	var wg sync.WaitGroup
+
+	numWorkers := 20
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go gwinnettTaxWorker(parcelIDs, results, db, &wg)
+	}
+
+	fmt.Println("Pulling information from Gwinnett tax assessor, please wait... ")
+
+	go func() {
+		for rows.Next() {
+			if err := rows.Scan(&parcel_id); err != nil {
+				log.Println("error scanning row", "error", err)
+				continue
+			}
+			parcelIDs <- parcel_id
 		}
-		totalRowsAffected += rowsAffected
+		close(parcelIDs)
+	}()
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	for updates := range results {
+		totalRequests += updates
 	}
 
 	if err := rows.Err(); err != nil {
 		return 0, fmt.Errorf("error during rows iteration: %v", err)
 	}
 
-	return totalRowsAffected, nil
+	return totalRequests, nil
 }
