@@ -45,12 +45,16 @@ func DownloadFile(filepath string, url string) error {
 	return nil
 }
 
-func RunPdfExtraction(scriptPath string) {
-	fmt.Println("Extracting data to csv located in ./tax-auction/Gwinnett. Please wait...")
+func RunPdfExtraction(scriptPath string, county string) {
+	fmt.Printf("Extracting data to csv located in ./tax-auction/%s. Please wait...\n", county)
 
 	// create csv files
-	os.Create("../../tax-auction/Gwinnett/csv/Gwinnett-Past-Sales.csv")
-	os.Create("../../tax-auction/Gwinnett/csv/Gwinnett-Upcoming-Sales.csv")
+	if UpperTrim(county) == "GWINNETT" {
+		os.Create(fmt.Sprintf("../../tax-auction/%s/csv/%s-Past-Sales.csv", county, county))
+		os.Create(fmt.Sprintf("../../tax-auction/%s/csv/%s-Upcoming-Sales.csv", county, county))
+	} else if UpperTrim(county) == "PAULDING" {
+		os.Create(fmt.Sprintf("../../tax-auction/%s/csv/%s-Upcoming-Sales.csv", county, county))
+	}
 
 	cmd := exec.Command("cmd", "/C", ".venv\\Scripts\\activate && python", scriptPath)
 	cmd.Stdout = os.Stdout
