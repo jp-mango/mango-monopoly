@@ -215,7 +215,7 @@ func InsertGwinnettUpcomingSalesData(salesData [][]string, db *sql.DB) (rowsEffe
 func gwinnettTaxWorker(parcelIDs <-chan string, results chan<- int64, db *sql.DB, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for parcel_id := range parcelIDs {
-		details := scraper.TaxAssessorsOfficePull(parcel_id)
+		details := scraper.GwinnettTaxAssessorsOfficePull(parcel_id)
 
 		updateQuery := `
 			UPDATE Properties
