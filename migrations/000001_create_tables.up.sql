@@ -4,8 +4,10 @@ CREATE TABLE IF NOT EXISTS Counties (county_id SERIAL PRIMARY KEY,
 
 
 CREATE TABLE IF NOT EXISTS Properties (property_id SERIAL PRIMARY KEY,
-																																								situs TEXT, county_id INT, parcel_id VARCHAR(150) NOT NULL UNIQUE,
-																																								property_type TEXT, land_value NUMERIC, building_value NUMERIC, fair_market_value NUMERIC, lot_size NUMERIC, square_footage NUMERIC, bedrooms INT, bathrooms INT, year_built INT, tax_assessor_url VARCHAR(200));
+																																								situs TEXT, city TEXT, "state" TEXT, zip_code VARCHAR(7),
+																																								county_id INT, parcel_id VARCHAR(150) NOT NULL UNIQUE,
+																																								property_type TEXT, land_value NUMERIC, building_value NUMERIC, fair_market_value NUMERIC, lot_size NUMERIC, square_footage NUMERIC, bedrooms INT, bathrooms INT, year_built INT, tax_assessor_url VARCHAR(200),
+																																								zillow_url VARCHAR(200));
 
 
 CREATE TABLE IF NOT EXISTS Property_Images (image_id SERIAL PRIMARY KEY,
