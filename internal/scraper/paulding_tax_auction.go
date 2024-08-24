@@ -81,8 +81,21 @@ func DownloadPauldingAuctionData() {
 }
 
 type PauldingPropertyDetails struct {
+	Account string
+	Owner   string
 	Address string
 	Zip     string
+	Updates int64
 }
 
-func PauldingTaxRecordsPull(realKey string) {}
+func PauldingTaxRecordsPull(realKey string) {
+	c := colly.NewCollector()
+
+	//propertyURL := fmt.Sprintf("https://qpublic.schneidercorp.com/Application.aspx?App=PauldingCountyGA&Layer=Parcels&PageType=Search")
+
+	details := PauldingPropertyDetails{}
+
+	c.OnResponse(func(r *colly.Response) {
+		details.Updates++
+	})
+}

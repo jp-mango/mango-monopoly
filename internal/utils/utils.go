@@ -2,11 +2,13 @@ package utils
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -106,4 +108,51 @@ func StringToDate(date string) (time.Time, error) {
 
 func ASCIISpace(s string) string {
 	return strings.TrimSpace(strings.ReplaceAll(s, " ", "%20"))
+}
+
+func GetLocationInfo(addr string) []string {
+	type AddrInfo struct {
+		Addy string `json:"display_name"`
+		Lat  string `json:"lat"`
+		Lon  string `json:"lon"`
+	}
+
+	geocodeURL := fmt.Sprintf("https://nominatim.openstreetmap.org/search?q=%s&format=json&limit=1", url.QueryEscape(addr))
+
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", geocodeURL, nil)
+	if err != nil {
+		log.Printf("Error creating HTTP request: %v", err)
+		return nil
+	}
+	req.Header.Set("User-Agent", "mango-monopoly/1.0")
+
+	response, err := client.Do(req)
+	if err != nil {
+		log.Printf("Error making HTTP request: %v", err)
+	}
+	defer response.Body.Close()
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Printf("Error reading response body: %v", err)
+	}
+
+	fmt.Print(string(body))
+
+	var result []AddrInfo
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		log.Printf("Error parsing JSON response: %v", err)
+	}
+
+	var address, latitude, longitude string
+
+	if len(result) > 0 {
+		latitude = result[0].Lat
+		longitude = result[0].Lon
+		address = result[0].Addy
+	}
+
+	return []string{latitude, longitude, address}
 }
