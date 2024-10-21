@@ -1,0 +1,27 @@
+{{define "base"}}
+<!doctype html>
+<html lang='en' class="h-full">
+
+<head>
+	<meta charset='utf-8'>
+	<title>{{template "title" .}} - Mango Monopoly</title>
+	<link rel="stylesheet" href="/static/css/output.css">
+	<link rel="stylesheet" href="https://cdn.shadcn.dev/latest.css">
+	<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="min-h-screen flex flex-col">
+	<header>
+		{{template "nav" .}}
+	</header>
+	<main class="flex-grow">
+		{{template "main" .}}
+	</main>
+	<footer>
+		<p class="container mx-auto text-center">Powered by <a href="https://go.dev/"
+				class="hover:text-purple-500">Go</a></p>
+	</footer>
+</body>
+
+</html>
+{{end}}
