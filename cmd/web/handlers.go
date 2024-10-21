@@ -34,7 +34,24 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func viewAllProperties(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Displaying all properties")
+	files := []string{
+		"html/base.tmpl",
+		"html/pages/properties.tmpl",
+		"html/partials/nav.tmpl",
+	}
+
+	ts, err := template.ParseFS(ui.TemplateFiles, files...)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	err = ts.ExecuteTemplate(w, "base", nil)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
 }
 
 func propertyView(w http.ResponseWriter, r *http.Request) {

@@ -13,7 +13,7 @@ func main() {
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
 	mux.HandleFunc("GET /{$}", home) //the {$} prevents wildcard matching
-	mux.HandleFunc("GET /property", viewAllProperties)
+	mux.HandleFunc("GET /properties", viewAllProperties)
 	mux.HandleFunc("GET /property/{id}", propertyView)
 
 	//prints log message server is starting
