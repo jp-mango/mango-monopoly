@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"log"
 	"mango-monopoly/ui"
@@ -61,5 +60,22 @@ func propertyView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Displaying a property with an ID of %d", id)
+	files := []string{
+		"html/base.tmpl",
+		"html/pages/property.tmpl",
+		"html/partials/nav.tmpl",
+	}
+
+	ts, err := template.ParseFS(ui.TemplateFiles, files...)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	err = ts.ExecuteTemplate(w, "base", nil)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
 }

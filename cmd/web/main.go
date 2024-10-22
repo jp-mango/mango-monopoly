@@ -1,11 +1,15 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 )
 
 func main() {
+	addr := flag.String("addr", ":4000", "HTTP network address")
+	flag.Parse()
+
 	//initialize a new serve multiplexer & register home as '/'
 	mux := http.NewServeMux()
 
@@ -17,9 +21,9 @@ func main() {
 	mux.HandleFunc("GET /property/{id}", propertyView)
 
 	//prints log message server is starting
-	log.Print("starting server on :4000")
+	log.Printf("starting server on %s",*addr)
 
 	//start a new web server, passing in TCP addr and the servemux.
-	err := http.ListenAndServe(":4000", mux)
+	err := http.ListenAndServe(*addr, mux)
 	log.Fatal(err)
 }
