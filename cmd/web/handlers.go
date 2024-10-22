@@ -2,14 +2,13 @@ package main
 
 import (
 	"html/template"
-	"log"
 	"mango-monopoly/ui"
 	"net/http"
 	"strconv"
 )
 
 // home handler with a byte slice as the response body
-func home(w http.ResponseWriter, r *http.Request) {
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Server", "Go")
 
 	files := []string{
@@ -20,19 +19,20 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	ts, err := template.ParseFS(ui.TemplateFiles, files...)
 	if err != nil {
-		log.Print(err.Error())
+		app.serverError(w, r, err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		log.Print(err.Error())
+		app.serverError(w, r, err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 }
 
-func viewAllProperties(w http.ResponseWriter, r *http.Request) {
+func (app *application) viewAllProperties(w http.ResponseWriter, r *http.Request) {
 	files := []string{
 		"html/base.tmpl",
 		"html/pages/properties.tmpl",
@@ -41,19 +41,19 @@ func viewAllProperties(w http.ResponseWriter, r *http.Request) {
 
 	ts, err := template.ParseFS(ui.TemplateFiles, files...)
 	if err != nil {
-		log.Print(err.Error())
+		app.serverError(w, r, err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		log.Print(err.Error())
+		app.serverError(w, r, err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
 
-func propertyView(w http.ResponseWriter, r *http.Request) {
+func (app *application) propertyView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || id < 1 {
 		http.NotFound(w, r)
@@ -68,14 +68,14 @@ func propertyView(w http.ResponseWriter, r *http.Request) {
 
 	ts, err := template.ParseFS(ui.TemplateFiles, files...)
 	if err != nil {
-		log.Print(err.Error())
+		app.serverError(w, r, err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	err = ts.ExecuteTemplate(w, "base", id)
 	if err != nil {
-		log.Print(err.Error())
+		app.serverError(w, r, err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
