@@ -21,18 +21,6 @@
 			</button>
 		</div>
 
-		<!-- Mobile menu -->
-		<div id="mobile-menu"
-			class="lg:hidden bg-white fixed inset-0 z-50 flex flex-col items-start justify-start p-6 space-y-4">
-			<!-- Adjust the font size and make the menu fullscreen-like -->
-			<a href="/" class="block text-xl font-medium text-gray-900 hover:text-primary w-full py-4">Home</a>
-			<a href="/properties"
-				class="block text-xl font-medium text-gray-900 hover:text-primary w-full py-4">Properties</a>
-			<a href="#" class="block text-xl font-medium text-gray-900 hover:text-primary w-full py-4">Feature 2</a>
-			<a href="#" class="block text-xl font-medium text-gray-900 hover:text-primary w-full py-4">Feature 3</a>
-			<a href="#" class="block text-xl font-medium text-gray-900 hover:text-primary w-full py-4">Log in</a>
-		</div>
-
 		<!-- Desktop menu -->
 		<div class="hidden lg:flex lg:gap-x-12">
 			<div class="relative">
@@ -104,33 +92,27 @@
 					aria-hidden="true">&rarr;</span></a>
 		</div>
 	</nav>
+
+	<!-- Fullscreen Mobile Menu -->
+	<div id="mobile-menu" class="fixed inset-0 z-50 hidden bg-white p-6 lg:hidden">
+		<div class="flex justify-between items-center">
+			<a href="/" class="text-lg font-semibold text-gray-900 hover:text-primary">Mango Monopoly</a>
+			<button id="close-mobile-menu" class="text-gray-700">
+				<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+					aria-hidden="true">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+		</div>
+		<div class="mt-8 space-y-6 text-lg">
+			<a href="/properties" class="block text-gray-900 hover:text-primary">Properties</a>
+			<a href="#" class="block text-gray-900 hover:text-primary">Feature 2</a>
+			<a href="#" class="block text-gray-900 hover:text-primary">Feature 3</a>
+			<a href="#" class="block text-gray-900 hover:text-primary">Feature 4</a>
+			<a href="#" class="block text-gray-900 hover:text-primary">Log in</a>
+		</div>
+	</div>
 </header>
 
-<!-- JavaScript for toggling the property menu, mobile menu, and flipping the arrow -->
-<script>
-	const propertyMenuButton = document.getElementById('property-menu-button');
-	const propertyMenu = document.getElementById('property-menu');
-	const propertyArrow = document.getElementById('property-arrow');
-
-	propertyMenuButton.addEventListener('click', () => {
-		propertyMenu.classList.toggle('hidden'); // Show/hide the property submenu
-		propertyArrow.classList.toggle('rotate-180'); // Rotate the arrow
-	});
-
-	// Close the property menu if you click outside
-	window.addEventListener('click', function (e) {
-		if (!propertyMenuButton.contains(e.target) && !propertyMenu.contains(e.target)) {
-			propertyMenu.classList.add('hidden');
-			propertyArrow.classList.remove('rotate-180'); // Reset the arrow
-		}
-	});
-
-	// Mobile menu toggle
-	const mobileMenuButton = document.getElementById('mobile-menu-button');
-	const mobileMenu = document.getElementById('mobile-menu');
-
-	mobileMenuButton.addEventListener('click', () => {
-		mobileMenu.classList.toggle('hidden'); // Toggle the mobile menu visibility
-	});
-</script>
+<script src="../../static/index.js"></script>
 {{end}}
