@@ -7,6 +7,8 @@
 				<img class="h-14 w-14" src="../../static/img/mango_monopoly_logo.webp" alt="">
 			</a>
 		</div>
+
+		<!-- Mobile menu button -->
 		<div class="flex lg:hidden">
 			<button type="button" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
 				id="mobile-menu-button">
@@ -18,6 +20,20 @@
 				</svg>
 			</button>
 		</div>
+
+		<!-- Mobile menu -->
+		<div id="mobile-menu"
+			class="lg:hidden bg-white fixed inset-0 z-50 flex flex-col items-start justify-start p-6 space-y-4">
+			<!-- Adjust the font size and make the menu fullscreen-like -->
+			<a href="/" class="block text-xl font-medium text-gray-900 hover:text-primary w-full py-4">Home</a>
+			<a href="/properties"
+				class="block text-xl font-medium text-gray-900 hover:text-primary w-full py-4">Properties</a>
+			<a href="#" class="block text-xl font-medium text-gray-900 hover:text-primary w-full py-4">Feature 2</a>
+			<a href="#" class="block text-xl font-medium text-gray-900 hover:text-primary w-full py-4">Feature 3</a>
+			<a href="#" class="block text-xl font-medium text-gray-900 hover:text-primary w-full py-4">Log in</a>
+		</div>
+
+		<!-- Desktop menu -->
 		<div class="hidden lg:flex lg:gap-x-12">
 			<div class="relative">
 				<button type="button"
@@ -90,7 +106,7 @@
 	</nav>
 </header>
 
-<!-- JavaScript for toggling the property menu and flipping the arrow -->
+<!-- JavaScript for toggling the property menu, mobile menu, and flipping the arrow -->
 <script>
 	const propertyMenuButton = document.getElementById('property-menu-button');
 	const propertyMenu = document.getElementById('property-menu');
@@ -101,12 +117,20 @@
 		propertyArrow.classList.toggle('rotate-180'); // Rotate the arrow
 	});
 
-	// Close the menu if you click outside
+	// Close the property menu if you click outside
 	window.addEventListener('click', function (e) {
 		if (!propertyMenuButton.contains(e.target) && !propertyMenu.contains(e.target)) {
 			propertyMenu.classList.add('hidden');
 			propertyArrow.classList.remove('rotate-180'); // Reset the arrow
 		}
+	});
+
+	// Mobile menu toggle
+	const mobileMenuButton = document.getElementById('mobile-menu-button');
+	const mobileMenu = document.getElementById('mobile-menu');
+
+	mobileMenuButton.addEventListener('click', () => {
+		mobileMenu.classList.toggle('hidden'); // Toggle the mobile menu visibility
 	});
 </script>
 {{end}}
