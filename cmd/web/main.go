@@ -2,13 +2,18 @@ package main
 
 import (
 	"flag"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 )
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	flag.Parse()
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: true,
+	}))
 
 	//initialize a new serve multiplexer & register home as '/'
 	mux := http.NewServeMux()
@@ -21,9 +26,10 @@ func main() {
 	mux.HandleFunc("GET /property/{id}", propertyView)
 
 	//prints log message server is starting
-	log.Printf("starting server on %s",*addr)
+	logger.Info("starting server", "addr", *addr)
 
 	//start a new web server, passing in TCP addr and the servemux.
 	err := http.ListenAndServe(*addr, mux)
-	log.Fatal(err)
+	logger.Error(err.Error())
+	os.Exit(1)
 }
