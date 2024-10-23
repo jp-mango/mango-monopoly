@@ -1,45 +1,87 @@
 package models
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
+	"time"
 )
 
 type Property struct {
-	ID              int
-	Address         string
-	City            string
-	State           string
-	Zip             string
-	ParcelID        string
-	PropertyType    string
-	LandValue       float32
-	BuildingValue   float32
-	FairMarketValue float32
-	LotSize         float32
+	ID              int64           `json:"id"`
+	Address         sql.NullString  `json:"address"`
+	City            sql.NullString  `json:"city"`
+	State           sql.NullString  `json:"state"`
+	Zip             sql.NullString  `json:"zip"`
+	ParcelID        sql.NullString  `json:"parcel_id"`
+	PropertyType    sql.NullString  `json:"property_type"`
+	LandValue       sql.NullFloat64 `json:"land_value"`
+	BuildingValue   sql.NullFloat64 `json:"building_value"`
+	FairMarketValue sql.NullFloat64 `json:"fair_market_value"`
+	LotSize         sql.NullFloat64 `json:"lot_size"`
 }
 
 type PropertyModel struct {
 	DB *sql.DB
 }
 
-func (m *PropertyModel) Insert(address, city, state, zip, parcelID, propertyType string, landValue, buildingValue, fmv, lotsize float32) (int, error) {
+func (m *PropertyModel) Insert(property *Property) (int64, error) {
 
-	//TODO:fix query, maybe?
-	stmt := `INSERT INTO properties (situs, city, "state", zip_code, parcel_id, property_type, land_value, building_value, fair_market_value, lot_size)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING property_id`
+	query := `
+		INSERT INTO properties (situs, city, "state", zip_code, parcel_id, 	property_type, land_value, building_value, fair_market_value, lot_size)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING property_id`
 
-	var id int
+	args := []any{property.Address, property.City, property.State, property.Zip, property.ParcelID, property.PropertyType, property.LandValue, property.BuildingValue, property.FairMarketValue, property.LotSize}
 
-	err := m.DB.QueryRow(stmt, address, city, state, zip, parcelID, propertyType, landValue, buildingValue, fmv, lotsize).Scan(&id)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var id int64
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&id)
 	if err != nil {
-		return 0, nil
+		return 0, ErrNoRecord
 	}
+
+	fmt.Println(id)
 
 	return id, nil
 }
 
-func (m *PropertyModel) Get(id int) (Property, error) {
-	return Property{}, nil
+func (m *PropertyModel) Get(id int64) (*Property, error) {
+	if id < 1 {
+		return nil, fmt.Errorf("id must be greater than 0")
+	}
+
+	query := `
+		SELECT property_id, situs, city, state, zip_code, parcel_id, property_type, land_value, building_value, fair_market_value, lot_size FROM properties
+		WHERE property_id = $1`
+
+	var property Property
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(
+		&property.ID,
+		&property.Address,
+		&property.City,
+		&property.State,
+		&property.Zip,
+		&property.ParcelID,
+		&property.PropertyType,
+		&property.LandValue,
+		&property.BuildingValue,
+		&property.FairMarketValue,
+		&property.LotSize,
+	)
+	if err != nil {
+		if err == ErrNoRecord {
+			return nil, ErrNoRecord
+		}
+		return nil, err
+	}
+
+	return &property, nil
 }
 
 func (m *PropertyModel) Latest() ([]Property, error) {
