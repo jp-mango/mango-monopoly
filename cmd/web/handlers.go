@@ -1,8 +1,11 @@
 package main
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"html/template"
+	"mango-monopoly/internal/models"
 	"mango-monopoly/ui"
 	"net/http"
 	"strconv"
@@ -61,6 +64,16 @@ func (app *application) propertyView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	property, err := app.properties.Get(int64(id))
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			http.NotFound(w, r)
+		} else {
+			app.serverError(w, r, err)
+		}
+		return
+	}
+
 	files := []string{
 		"html/base.tmpl",
 		"html/pages/property.tmpl",
@@ -74,36 +87,33 @@ func (app *application) propertyView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ts.ExecuteTemplate(w, "base", id)
+	err = ts.ExecuteTemplate(w, "base", property)
 	if err != nil {
 		app.serverError(w, r, err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
 
-// TODO: fix handler - curl request returning 0 for id
+// TODO: accept user input
 func (app *application) createProperty(w http.ResponseWriter, r *http.Request) {
 	//dummy data
-	addr := "123 test rd."
-	city := "townsville"
-	state := "Georgia"
-	zip := "1234"
-	parselID := "abcd"
-	propertyType := "Multifamily compound"
-	landValue := 58394054
-	buildingValue := 54355324
-	fmv := 4325454254234
-	lotSize := 43.6
-
-	id, err := app.properties.Insert(addr, city, state, zip, parselID, propertyType, float32(landValue), float32(buildingValue), float32(fmv), float32(lotSize))
-	if err != nil {
-		app.serverError(w, r, err)
-		fmt.Println("Error inserting property:", err)
-		return
+	property := &models.Property{
+		Address:         sql.NullString{String: "123 test ln", Valid: true},
+		City:            sql.NullString{String: "gotham", Valid: true},
+		State:           sql.NullString{String: "new york", Valid: true},
+		Zip:             sql.NullString{String: "90210", Valid: true},
+		ParcelID:        sql.NullString{String: "LOL4U", Valid: true},
+		PropertyType:    sql.NullString{String: "asylum", Valid: true},
+		LandValue:       sql.NullFloat64{Float64: 0, Valid: true},
+		BuildingValue:   sql.NullFloat64{Float64: 200000, Valid: true},
+		FairMarketValue: sql.NullFloat64{Float64: 250000, Valid: true},
+		LotSize:         sql.NullFloat64{Float64: 15.7, Valid: true},
 	}
 
-	if id == 0 {
-		fmt.Println("Insert successful but ID is 0, possible issue with query or RETURNING clause.")
+	id, err := app.properties.Insert(property)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
 	}
 
 	http.Redirect(w, r, fmt.Sprintf("/property/%d", id), http.StatusSeeOther)
