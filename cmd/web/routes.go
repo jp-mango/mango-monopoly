@@ -12,5 +12,6 @@ func (app *application) routes() *http.ServeMux {
 	mux.HandleFunc("GET /{$}", app.home) //the {$} prevents wildcard matching
 	mux.HandleFunc("GET /properties", app.viewAllProperties)
 	mux.HandleFunc("GET /property/{id}", app.propertyView)
+	mux.HandleFunc("POST /property/create", app.createProperty)
 	return mux
 }

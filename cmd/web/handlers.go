@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"mango-monopoly/ui"
 	"net/http"
@@ -78,4 +79,32 @@ func (app *application) propertyView(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
+}
+
+// TODO: fix handler - curl request returning 0 for id
+func (app *application) createProperty(w http.ResponseWriter, r *http.Request) {
+	//dummy data
+	addr := "123 test rd."
+	city := "townsville"
+	state := "Georgia"
+	zip := "1234"
+	parselID := "abcd"
+	propertyType := "Multifamily compound"
+	landValue := 58394054
+	buildingValue := 54355324
+	fmv := 4325454254234
+	lotSize := 43.6
+
+	id, err := app.properties.Insert(addr, city, state, zip, parselID, propertyType, float32(landValue), float32(buildingValue), float32(fmv), float32(lotSize))
+	if err != nil {
+		app.serverError(w, r, err)
+		fmt.Println("Error inserting property:", err)
+		return
+	}
+
+	if id == 0 {
+		fmt.Println("Insert successful but ID is 0, possible issue with query or RETURNING clause.")
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/property/%d", id), http.StatusSeeOther)
 }
