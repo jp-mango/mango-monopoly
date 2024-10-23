@@ -83,14 +83,16 @@ func (app *application) propertyView(w http.ResponseWriter, r *http.Request) {
 	ts, err := template.ParseFS(ui.TemplateFiles, files...)
 	if err != nil {
 		app.serverError(w, r, err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	err = ts.ExecuteTemplate(w, "base", property)
+	data := templateData{
+		Property: *property,
+	}
+
+	err = ts.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		app.serverError(w, r, err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
 
@@ -98,16 +100,16 @@ func (app *application) propertyView(w http.ResponseWriter, r *http.Request) {
 func (app *application) createProperty(w http.ResponseWriter, r *http.Request) {
 	//dummy data
 	property := &models.Property{
-		Address:         sql.NullString{String: "123 test ln", Valid: true},
-		City:            sql.NullString{String: "gotham", Valid: true},
-		State:           sql.NullString{String: "new york", Valid: true},
-		Zip:             sql.NullString{String: "90210", Valid: true},
-		ParcelID:        sql.NullString{String: "LOL4U", Valid: true},
-		PropertyType:    sql.NullString{String: "asylum", Valid: true},
+		Address:         sql.NullString{String: "45 Wallaby Way.", Valid: true},
+		City:            sql.NullString{String: "Sydney", Valid: true},
+		State:           sql.NullString{String: "Australia", Valid: true},
+		Zip:             sql.NullString{String: "1337", Valid: true},
+		ParcelID:        sql.NullString{String: "DU", Valid: true},
+		PropertyType:    sql.NullString{String: "land", Valid: true},
 		LandValue:       sql.NullFloat64{Float64: 0, Valid: true},
-		BuildingValue:   sql.NullFloat64{Float64: 200000, Valid: true},
-		FairMarketValue: sql.NullFloat64{Float64: 250000, Valid: true},
-		LotSize:         sql.NullFloat64{Float64: 15.7, Valid: true},
+		BuildingValue:   sql.NullFloat64{Float64: 24500000, Valid: true},
+		FairMarketValue: sql.NullFloat64{Float64: 27650000, Valid: true},
+		LotSize:         sql.NullFloat64{Float64: 102.8, Valid: true},
 	}
 
 	id, err := app.properties.Insert(property)
