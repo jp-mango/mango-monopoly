@@ -49,7 +49,7 @@ func (m *PropertyModel) Insert(property *Property) (int64, error) {
 
 func (m *PropertyModel) Get(id int64) (*Property, error) {
 	if id < 1 {
-		return nil, fmt.Errorf("id must be greater than 0")
+		return nil, ErrNoRecord
 	}
 
 	query := `
