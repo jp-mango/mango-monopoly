@@ -5,7 +5,7 @@
 	<!-- Upcoming Sales Section -->
 	<div class="px-4 sm:px-0">
 		<h3 class="text-base font-semibold leading-7 text-gray-900">Upcoming Sales</h3>
-		<p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">List of upcoming sales.</p>
+		<p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">List of upcoming sales. ONLY AN EXAMPLE LAYOUT</p>
 	</div>
 
 	<!-- Upcoming Sales List -->
@@ -13,17 +13,25 @@
 		<dl class="divide-y divide-gray-100">
 			<div class="py-6">
 				<ul role="list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-					{{range .UpcomingProperties}} <!-- Loop for upcoming properties -->
 					<li class="bg-white rounded-lg shadow-md p-4 flex flex-col justify-between">
 						<div class="text-sm">
-							<p class="font-medium text-gray-900">{{.Address}}</p>
-							<p class="text-gray-500">${{.Price}} • {{.AuctionDate}}</p>
+							<p class="font-medium text-gray-900">HIGHTOWER TRL</p>
+							<p class="text-gray-500">$1,000 | Residual Land</p>
 						</div>
 						<div class="mt-2">
-							<a href="/property/{{.ID}}" class="text-primary font-medium hover:text-purple-700">View</a>
+							<a href="/property/1" class="text-primary font-medium hover:text-purple-700">View</a>
 						</div>
 					</li>
-					{{end}} <!-- End upcoming properties loop -->
+					<li class="bg-white rounded-lg shadow-md p-4 flex flex-col justify-between">
+						<div class="text-sm">
+							<p class="font-medium text-gray-900">1601 ROSE GARDEN LN</p>
+							<p class="text-gray-500">$283,300 | Residential SFR</p>
+						</div>
+						<div class="mt-2">
+							<a href="/property/2" class="text-primary font-medium hover:text-purple-700">View</a>
+						</div>
+					</li>
+					<!-- Add more static property items as needed -->
 				</ul>
 			</div>
 		</dl>
@@ -32,26 +40,26 @@
 	<!-- Pagination for Upcoming Sales -->
 	<div class="mt-8 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
 		<div class="flex flex-1 justify-between sm:hidden">
-			<a href="?page={{.UpcomingPrevPage}}"
+			<a href="?page=1"
 				class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Previous</a>
-			<a href="?page={{.UpcomingNextPage}}"
+			<a href="?page=2"
 				class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Next</a>
 		</div>
 		<div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
 			<div>
 				<p class="text-sm text-gray-700">
 					Showing
-					<span class="font-medium">{{.UpcomingStartProperty}}</span>
+					<span class="font-medium">?</span>
 					to
-					<span class="font-medium">{{.UpcomingEndProperty}}</span>
+					<span class="font-medium">?</span>
 					of
-					<span class="font-medium">{{.UpcomingTotalProperties}}</span>
+					<span class="font-medium">?</span>
 					results
 				</p>
 			</div>
 			<div>
 				<nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-					<a href="?page={{.UpcomingPrevPage}}"
+					<a href="?page=1"
 						class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
 						<span class="sr-only">Previous</span>
 						<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -60,11 +68,13 @@
 								clip-rule="evenodd" />
 						</svg>
 					</a>
-					{{range .UpcomingPages}} <!-- Loop for pagination -->
-					<a href="?page={{.}}"
-						class="relative inline-flex items-center px-4 py-2 text-sm font-semibold {{if eq .CurrentPage .}} bg-indigo-600 text-white {{else}} text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 {{end}} focus:z-20 focus:outline-offset-0">{{.}}</a>
-					{{end}}
-					<a href="?page={{.UpcomingNextPage}}"
+					<a href="?page=1"
+						class="relative inline-flex items-center px-4 py-2 text-sm font-semibold bg-indigo-600 text-white focus:z-20 focus:outline-offset-0">1</a>
+					<a href="?page=2"
+						class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">2</a>
+					<a href="?page=3"
+						class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">3</a>
+					<a href="?page=2"
 						class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
 						<span class="sr-only">Next</span>
 						<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -84,7 +94,7 @@
 	<!-- Past Sales Section -->
 	<div class="px-4 sm:px-0 mt-8">
 		<h3 class="text-base font-semibold leading-7 text-gray-900">Past Sales</h3>
-		<p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">List of past sales.</p>
+		<p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">List of past sales. ONLY AN EXAMPLE LAYOUT</p>
 	</div>
 
 	<!-- Past Sales List -->
@@ -92,17 +102,25 @@
 		<dl class="divide-y divide-gray-100">
 			<div class="py-6">
 				<ul role="list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-					{{range .PastProperties}} <!-- Loop for past properties -->
 					<li class="bg-white rounded-lg shadow-md p-4 flex flex-col justify-between">
 						<div class="text-sm">
-							<p class="font-medium text-gray-900">{{.Address}}</p>
-							<p class="text-gray-500">${{.Price}} • {{.SaleDate}}</p>
+							<p class="font-medium text-gray-900">HWY 84</p>
+							<p class="text-gray-500">$48,100 | Residential Vacant</p>
 						</div>
 						<div class="mt-2">
-							<a href="/property/{{.ID}}" class="text-primary font-medium hover:text-purple-700">View</a>
+							<a href="/property/3" class="text-primary font-medium hover:text-purple-700">View</a>
 						</div>
 					</li>
-					{{end}} <!-- End past properties loop -->
+					<li class="bg-white rounded-lg shadow-md p-4 flex flex-col justify-between">
+						<div class="text-sm">
+							<p class="font-medium text-gray-900">ROSEDALE RD</p>
+							<p class="text-gray-500">$2,000 • Residual Land</p>
+						</div>
+						<div class="mt-2">
+							<a href="/property/4" class="text-primary font-medium hover:text-purple-700">View</a>
+						</div>
+					</li>
+					<!-- Add more static property items as needed -->
 				</ul>
 			</div>
 		</dl>
@@ -111,26 +129,26 @@
 	<!-- Pagination for Past Sales -->
 	<div class="mt-8 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
 		<div class="flex flex-1 justify-between sm:hidden">
-			<a href="?page={{.PastPrevPage}}"
+			<a href="?page=1"
 				class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Previous</a>
-			<a href="?page={{.PastNextPage}}"
+			<a href="?page=2"
 				class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Next</a>
 		</div>
 		<div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
 			<div>
 				<p class="text-sm text-gray-700">
 					Showing
-					<span class="font-medium">{{.PastStartProperty}}</span>
+					<span class="font-medium">?</span>
 					to
-					<span class="font-medium">{{.PastEndProperty}}</span>
+					<span class="font-medium">?</span>
 					of
-					<span class="font-medium">{{.PastTotalProperties}}</span>
+					<span class="font-medium">?</span>
 					results
 				</p>
 			</div>
 			<div>
 				<nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-					<a href="?page={{.PastPrevPage}}"
+					<a href="?page=1"
 						class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
 						<span class="sr-only">Previous</span>
 						<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -139,11 +157,13 @@
 								clip-rule="evenodd" />
 						</svg>
 					</a>
-					{{range .PastPages}} <!-- Loop for pagination -->
-					<a href="?page={{.}}"
-						class="relative inline-flex items-center px-4 py-2 text-sm font-semibold {{if eq .CurrentPage .}} bg-indigo-600 text-white {{else}} text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 {{end}} focus:z-20 focus:outline-offset-0">{{.}}</a>
-					{{end}}
-					<a href="?page={{.PastNextPage}}"
+					<a href="?page=1"
+						class="relative inline-flex items-center px-4 py-2 text-sm font-semibold bg-indigo-600 text-white focus:z-20 focus:outline-offset-0">1</a>
+					<a href="?page=2"
+						class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">2</a>
+					<a href="?page=3"
+						class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">3</a>
+					<a href="?page=2"
 						class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
 						<span class="sr-only">Next</span>
 						<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
