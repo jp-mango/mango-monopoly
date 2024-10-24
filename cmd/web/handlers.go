@@ -74,42 +74,26 @@ func (app *application) propertyView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	files := []string{
-		"html/base.tmpl",
-		"html/pages/property.tmpl",
-		"html/partials/nav.tmpl",
-	}
-
-	ts, err := template.ParseFS(ui.TemplateFiles, files...)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-
-	data := templateData{
-		Property: *property,
-	}
-
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		app.serverError(w, r, err)
-	}
+	app.render(w, r, http.StatusOK, "property.tmpl", templateData{
+		Property:      *property,
+		PropertyModel: &models.PropertyModel{},
+	})
 }
 
 // TODO: accept user input
 func (app *application) createProperty(w http.ResponseWriter, r *http.Request) {
 	//dummy data
 	property := &models.Property{
-		Address:         sql.NullString{String: "45 Wallaby Way.", Valid: true},
-		City:            sql.NullString{String: "Sydney", Valid: true},
-		State:           sql.NullString{String: "Australia", Valid: true},
-		Zip:             sql.NullString{String: "1337", Valid: true},
-		ParcelID:        sql.NullString{String: "DU", Valid: true},
-		PropertyType:    sql.NullString{String: "land", Valid: true},
-		LandValue:       sql.NullFloat64{Float64: 0, Valid: true},
-		BuildingValue:   sql.NullFloat64{Float64: 24500000, Valid: true},
-		FairMarketValue: sql.NullFloat64{Float64: 27650000, Valid: true},
-		LotSize:         sql.NullFloat64{Float64: 102.8, Valid: true},
+		Address:         sql.NullString{String: "45 Wallaby Way."},
+		City:            sql.NullString{String: "Sydney"},
+		State:           sql.NullString{String: "Australia"},
+		Zip:             sql.NullString{String: "1337"},
+		ParcelID:        sql.NullString{String: "DU"},
+		PropertyType:    sql.NullString{String: "land"},
+		LandValue:       sql.NullInt64{Int64: 0},
+		BuildingValue:   sql.NullInt64{Int64: 24500000},
+		FairMarketValue: sql.NullInt64{Int64: 27650000},
+		LotSize:         sql.NullFloat64{Float64: 102.8},
 	}
 
 	id, err := app.properties.Insert(property)
