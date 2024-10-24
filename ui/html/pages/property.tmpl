@@ -10,28 +10,30 @@
 		<dl class="divide-y divide-gray-100">
 			<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
 				<dt class="text-sm font-medium leading-6 text-gray-900">Street Address</dt>
-				<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0"> {{.Property.Address.String}}
+				<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0"> {{.Property.Address.String}}
 					{{.Property.City.String}},{{.Property.State.String}} {{.Property.Zip.String}}</dd>
 			</div>
 			<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
 				<dt class="text-sm font-medium leading-6 text-gray-900">ParcelID</dt>
-				<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{.Property.ParcelID.String}}
+				<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">{{.Property.ParcelID.String}}
 				</dd>
 			</div>
 			<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
 				<dt class="text-sm font-medium leading-6 text-gray-900">Property Type</dt>
-				<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{.Property.PropertyType.String}}
+				<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">{{.Property.PropertyType.String}}
 				</dd>
 			</div>
 			<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
 				<dt class="text-sm font-medium leading-6 text-gray-900">Price</dt>
-				<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-					{{.Property.FairMarketValue.Float64}}</dd>
+				<dd class="mt-1 text-sm leading-6 sm:col-span-2 sm:mt-0 text-primary">
+					${{.PropertyModel.FormatMoney .Property.FairMarketValue.Int64}}
+				</dd>
 			</div>
 			<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
 				<dt class="text-sm font-medium leading-6 text-gray-900">About</dt>
-				<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">This property sits on a
-					{{.Property.LotSize.Float64}} acre lot.</dd>
+				<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">This property sits on a <a
+						class="text-primary">{{.Property.LotSize.Float64}}</a> acre lot.
+				</dd>
 			</div>
 			<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
 				<dt class="text-sm font-medium leading-6 text-gray-900">Attachments</dt>
