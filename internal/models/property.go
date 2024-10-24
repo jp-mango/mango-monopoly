@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -15,9 +16,9 @@ type Property struct {
 	Zip             sql.NullString  `json:"zip"`
 	ParcelID        sql.NullString  `json:"parcel_id"`
 	PropertyType    sql.NullString  `json:"property_type"`
-	LandValue       sql.NullFloat64 `json:"land_value"`
-	BuildingValue   sql.NullFloat64 `json:"building_value"`
-	FairMarketValue sql.NullFloat64 `json:"fair_market_value"`
+	LandValue       sql.NullInt64   `json:"land_value"`
+	BuildingValue   sql.NullInt64   `json:"building_value"`
+	FairMarketValue sql.NullInt64   `json:"fair_market_value"`
 	LotSize         sql.NullFloat64 `json:"lot_size"`
 }
 
@@ -86,4 +87,21 @@ func (m *PropertyModel) Get(id int64) (*Property, error) {
 
 func (m *PropertyModel) Latest() ([]Property, error) {
 	return nil, nil
+}
+
+func (model *PropertyModel) FormatMoney(price int64) string {
+	m := strconv.FormatInt(price, 10)
+	n := len(m)
+	if n <= 3 {
+		return m
+	}
+
+	var result string
+	for i := n - 1; i >= 0; i-- {
+		result = string(m[i]) + result
+		if (n-i)%3 == 0 && i != 0 {
+			result = "," + result
+		}
+	}
+	return result
 }
