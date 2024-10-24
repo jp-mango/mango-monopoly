@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"flag"
+	"html/template"
 	"log"
 	"log/slog"
 	"mango-monopoly/internal/models"
@@ -17,8 +18,9 @@ import (
 )
 
 type application struct {
-	logger     *slog.Logger
-	properties *models.PropertyModel
+	logger        *slog.Logger
+	properties    *models.PropertyModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -26,14 +28,13 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	dbCon := os.Getenv("DSN")
 
 	addr := flag.String("addr", ":4000", "HTTP network address")
-	dsn := flag.String("dsn", dbCon, "Postgres data source name")
+	dsn := flag.String("dsn", os.Getenv("DSN"), "Postgres data source name")
 	flag.Parse()
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource: true,
+		//AddSource: true,
 	}))
 
 	db, err := openDB(*dsn)
@@ -44,9 +45,16 @@ func main() {
 	defer db.Close()
 	logger.Info("db connection established")
 
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
 	app := &application{
-		logger:     logger,
-		properties: &models.PropertyModel{DB: db},
+		logger:        logger,
+		properties:    &models.PropertyModel{DB: db},
+		templateCache: templateCache,
 	}
 	//prints log message server is starting
 	logger.Info("starting server", "addr", *addr)
