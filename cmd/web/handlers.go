@@ -4,9 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"html/template"
 	"mango-monopoly/internal/models"
-	"mango-monopoly/ui"
 	"net/http"
 	"strconv"
 )
@@ -15,46 +13,11 @@ import (
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Server", "Go")
 
-	files := []string{
-		"html/base.tmpl",
-		"html/pages/home.tmpl",
-		"html/partials/nav.tmpl",
-	}
-
-	ts, err := template.ParseFS(ui.TemplateFiles, files...)
-	if err != nil {
-		app.serverError(w, r, err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	err = ts.ExecuteTemplate(w, "base", nil)
-	if err != nil {
-		app.serverError(w, r, err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
+	app.render(w, r, http.StatusOK, "home.tmpl", templateData{})
 }
 
 func (app *application) viewAllProperties(w http.ResponseWriter, r *http.Request) {
-	files := []string{
-		"html/base.tmpl",
-		"html/pages/properties.tmpl",
-		"html/partials/nav.tmpl",
-	}
-
-	ts, err := template.ParseFS(ui.TemplateFiles, files...)
-	if err != nil {
-		app.serverError(w, r, err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	err = ts.ExecuteTemplate(w, "base", nil)
-	if err != nil {
-		app.serverError(w, r, err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
+	app.render(w, r, http.StatusOK, "properties.tmpl", templateData{})
 }
 
 func (app *application) propertyView(w http.ResponseWriter, r *http.Request) {
