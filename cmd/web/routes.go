@@ -2,7 +2,7 @@ package main
 
 import "net/http"
 
-func (app *application) routes() *http.ServeMux {
+func (app *application) routes() http.Handler {
 	//initialize a new serve multiplexer & register home as '/'
 	mux := http.NewServeMux()
 
@@ -13,5 +13,5 @@ func (app *application) routes() *http.ServeMux {
 	mux.HandleFunc("GET /properties", app.viewAllProperties)
 	mux.HandleFunc("GET /property/{id}", app.propertyView)
 	mux.HandleFunc("POST /property/create", app.createProperty)
-	return mux
+	return commonHeaders(mux)
 }
