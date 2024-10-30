@@ -13,5 +13,5 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("GET /properties", app.viewAllProperties)
 	mux.HandleFunc("GET /property/{id}", app.propertyView)
 	mux.HandleFunc("POST /property/create", app.createProperty)
-	return commonHeaders(mux)
+	return app.logRequest(commonHeaders(mux))
 }
