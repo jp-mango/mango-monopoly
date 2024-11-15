@@ -53,10 +53,21 @@ func (m *PropertyModel) Get(id int64) (*Property, error) {
 		return nil, ErrNoRecord
 	}
 
+	//! put state below in quotes and test functionality
 	query := `
-		SELECT property_id, situs, city, state, zip_code, parcel_id, property_type, land_value, building_value, fair_market_value, lot_size FROM properties
+		SELECT property_id,
+		situs,
+		city,
+		state,
+		zip_code,
+		parcel_id,
+		property_type,
+		land_value,
+		building_value,
+		fair_market_value,
+		lot_size
+		FROM properties
 		WHERE property_id = $1`
-
 	var property Property
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -86,7 +97,63 @@ func (m *PropertyModel) Get(id int64) (*Property, error) {
 }
 
 func (m *PropertyModel) Latest() ([]Property, error) {
-	return nil, nil
+	query := `
+		SELECT property_id,
+		situs,
+		city,
+		"state",
+		zip_code,
+		parcel_id,
+		property_type,
+		land_value,
+		building_value,
+		fair_market_value,
+		lot_size
+		FROM properties
+		ORDER BY property_id DESC
+		LIMIT 15`
+
+	var latestProperties []Property
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		if err == ErrNoRecord {
+			return nil, ErrNoRecord
+		}
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var property Property
+		err := rows.Scan(
+			&property.ID,
+			&property.Address,
+			&property.City,
+			&property.State,
+			&property.Zip,
+			&property.ParcelID,
+			&property.PropertyType,
+			&property.LandValue,
+			&property.BuildingValue,
+			&property.FairMarketValue,
+			&property.LotSize,
+		)
+		if err != nil {
+			return nil, err
+		}
+		latestProperties = append(latestProperties, property)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return latestProperties, nil
 }
 
 func (model *PropertyModel) FormatMoney(price int64) string {
