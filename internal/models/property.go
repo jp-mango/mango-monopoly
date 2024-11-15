@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strconv"
 	"time"
 )
@@ -14,12 +13,19 @@ type Property struct {
 	City            sql.NullString  `json:"city"`
 	State           sql.NullString  `json:"state"`
 	Zip             sql.NullString  `json:"zip"`
+	County          sql.NullString  `json:"county_id"`
 	ParcelID        sql.NullString  `json:"parcel_id"`
 	PropertyType    sql.NullString  `json:"property_type"`
 	LandValue       sql.NullInt64   `json:"land_value"`
 	BuildingValue   sql.NullInt64   `json:"building_value"`
 	FairMarketValue sql.NullInt64   `json:"fair_market_value"`
 	LotSize         sql.NullFloat64 `json:"lot_size"`
+	SquareFt        sql.NullInt64   `json:"square_footage"`
+	Bedrooms        sql.NullInt16   `json:"bedrooms"`
+	Bathrooms       sql.NullFloat64 `json:"bathrooms"`
+	YearBuilt       sql.NullInt16   `json:"year_built"`
+	TaxURL          sql.NullString  `json:"tax_assessor_url"`
+	ZillowURL       sql.NullString  `json:"zillow_url"`
 }
 
 type PropertyModel struct {
@@ -29,10 +35,10 @@ type PropertyModel struct {
 func (m *PropertyModel) Insert(property *Property) (int64, error) {
 
 	query := `
-		INSERT INTO properties (situs, city, "state", zip_code, parcel_id, 	property_type, land_value, building_value, fair_market_value, lot_size)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING property_id`
+		INSERT INTO properties (situs, city, "state", "zip_code",county_id,parcel_id,property_type,land_value, building_value, fair_market_value,lot_size, square_footage,bedrooms,bathrooms, year_built, tax_assessor_url,zillow_url)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING property_id`
 
-	args := []any{property.Address, property.City, property.State, property.Zip, property.ParcelID, property.PropertyType, property.LandValue, property.BuildingValue, property.FairMarketValue, property.LotSize}
+	args := []any{property.Address, property.City, property.State, property.Zip, property.County, property.ParcelID, property.PropertyType, property.LandValue, property.BuildingValue, property.FairMarketValue, property.LotSize, property.SquareFt, property.Bedrooms, property.Bathrooms, property.YearBuilt, property.TaxURL, property.ZillowURL}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -43,8 +49,6 @@ func (m *PropertyModel) Insert(property *Property) (int64, error) {
 		return 0, ErrNoRecord
 	}
 
-	fmt.Println(id)
-
 	return id, nil
 }
 
@@ -53,12 +57,11 @@ func (m *PropertyModel) Get(id int64) (*Property, error) {
 		return nil, ErrNoRecord
 	}
 
-	//! put state below in quotes and test functionality
 	query := `
 		SELECT property_id,
 		situs,
 		city,
-		state,
+		"state",
 		zip_code,
 		parcel_id,
 		property_type,
