@@ -4,7 +4,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#7C3AED', // purple-500
+        primary: '#FF8040', // purple-500
         secondary: '#94A3B8', // slate-300
         accent: '#E2E8F0', // slate-100 for light accents
         background: '#1E293B', // slate-800 for a dark background

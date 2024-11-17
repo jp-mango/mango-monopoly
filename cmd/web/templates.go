@@ -10,7 +10,9 @@ import (
 )
 
 type templateData struct {
+	CurrentYear   int
 	Property      models.Property
+	Properties    []models.Property
 	PropertyModel *models.PropertyModel
 }
 

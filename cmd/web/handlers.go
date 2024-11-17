@@ -11,12 +11,22 @@ import (
 
 // home handler with a byte slice as the response body
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, http.StatusOK, "home.tmpl", templateData{})
+	properties, err := app.properties.Latest()
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.Properties = properties
+
+	app.render(w, r, http.StatusOK, "home.tmpl", data)
 }
 
 func (app *application) viewAllProperties(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
 
-	app.render(w, r, http.StatusOK, "properties.tmpl", templateData{})
+	app.render(w, r, http.StatusOK, "properties.tmpl", data)
 }
 
 func (app *application) propertyView(w http.ResponseWriter, r *http.Request) {
@@ -36,10 +46,10 @@ func (app *application) propertyView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.render(w, r, http.StatusOK, "property.tmpl", templateData{
-		Property:      *property,
-		PropertyModel: &models.PropertyModel{},
-	})
+	data := app.newTemplateData(r)
+	data.Property = *property
+
+	app.render(w, r, http.StatusOK, "property.tmpl", data)
 }
 
 func (app *application) createPropertyPage(w http.ResponseWriter, r *http.Request) {
