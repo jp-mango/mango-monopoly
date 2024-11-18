@@ -3,10 +3,10 @@ package models
 import (
 	"context"
 	"database/sql"
-	"strconv"
 	"time"
 )
 
+// TODO: check is the json tag is even doing anything????
 type Property struct {
 	ID              int64           `json:"id"`
 	Address         sql.NullString  `json:"address"`
@@ -157,21 +157,4 @@ func (m *PropertyModel) Latest() ([]Property, error) {
 	}
 
 	return latestProperties, nil
-}
-
-func (model *PropertyModel) FormatMoney(price int64) string {
-	m := strconv.FormatInt(price, 10)
-	n := len(m)
-	if n <= 3 {
-		return m
-	}
-
-	var result string
-	for i := n - 1; i >= 0; i-- {
-		result = string(m[i]) + result
-		if (n-i)%3 == 0 && i != 0 {
-			result = "," + result
-		}
-	}
-	return result
 }
