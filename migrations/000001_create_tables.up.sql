@@ -32,9 +32,9 @@ CREATE TABLE IF NOT EXISTS Past_Sales (sale_id SERIAL PRIMARY KEY,
 																																								winning_bid_amount NUMERIC);
 
 
-CREATE TABLE IF NOT EXISTS "Sessions" (token CHAR(43) PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS "sessions" (token CHAR(43) PRIMARY KEY,
 																																								data BYTEA NOT NULL,
 																																								expiry TIMESTAMP(6) NOT NULL);
 
 
-CREATE INDEX sessions_expiry_idx ON "Sessions" (expiry);
+CREATE INDEX sessions_expiry_idx ON "sessions" (expiry);
