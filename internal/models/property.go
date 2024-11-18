@@ -46,7 +46,7 @@ func (m *PropertyModel) Insert(property *Property) (int64, error) {
 	var id int64
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&id)
 	if err != nil {
-		return 0, ErrNoRecord
+		return 0, err
 	}
 
 	return id, nil
