@@ -64,11 +64,17 @@ func main() {
 		templateCache:  templateCache,
 		sessionManager: sessionManager,
 	}
+
+	srv := &http.Server{
+		Addr:     *addr,
+		Handler:  app.routes(),
+		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),
+	}
 	//prints log message server is starting
-	logger.Info("starting server", "addr", *addr)
+	logger.Info("starting server", "addr", srv.Addr)
 
 	//start a new web server, passing in TCP addr and the servemux.
-	err = http.ListenAndServe(*addr, app.routes())
+	err = srv.ListenAndServeTLS("./tls/localhost.pem", "./tls/localhost-key.pem")
 	logger.Error(err.Error())
 	os.Exit(1)
 }
