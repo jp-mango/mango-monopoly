@@ -11,6 +11,11 @@ import (
 
 // home handler with a byte slice as the response body
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	app.render(w, r, http.StatusOK, "home.tmpl", data)
+}
+
+func (app *application) viewAllProperties(w http.ResponseWriter, r *http.Request) {
 	properties, err := app.properties.Latest()
 	if err != nil {
 		app.serverError(w, r, err)
@@ -19,12 +24,6 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 	data := app.newTemplateData(r)
 	data.Properties = properties
-
-	app.render(w, r, http.StatusOK, "home.tmpl", data)
-}
-
-func (app *application) viewAllProperties(w http.ResponseWriter, r *http.Request) {
-	data := app.newTemplateData(r)
 
 	app.render(w, r, http.StatusOK, "properties.tmpl", data)
 }
