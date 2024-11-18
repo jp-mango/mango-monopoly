@@ -145,5 +145,5 @@ func (app *application) propertyCreatePost(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/property/view/%d", prop.ID), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/property/%d", prop.ID), http.StatusSeeOther)
 }
