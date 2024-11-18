@@ -25,6 +25,7 @@ type application struct {
 	properties     *models.PropertyModel
 	templateCache  map[string]*template.Template
 	sessionManager *scs.SessionManager
+	users          *models.UserModel
 }
 
 func main() {
@@ -64,6 +65,7 @@ func main() {
 		properties:     &models.PropertyModel{DB: db},
 		templateCache:  templateCache,
 		sessionManager: sessionManager,
+		users:          &models.UserModel{DB: db},
 	}
 
 	tlsConfig := &tls.Config{
