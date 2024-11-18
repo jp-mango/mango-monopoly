@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/justinas/alice"
 	chain "github.com/justinas/alice"
 )
 
@@ -13,14 +14,16 @@ func (app *application) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
-	mux.HandleFunc("GET /{$}", app.home) //the {$} prevents wildcard matching
+	dynamic := alice.New(app.sessionManager.LoadAndSave)
 
-	mux.HandleFunc("GET /properties", app.viewAllProperties)
+	mux.Handle("GET /{$}", dynamic.ThenFunc(app.home)) //the {$} prevents wildcard matching
 
-	mux.HandleFunc("GET /property/{id}", app.propertyView)
+	mux.Handle("GET /properties", dynamic.ThenFunc(app.viewAllProperties))
 
-	mux.HandleFunc("GET /property/create", app.createPropertyPage)
-	mux.HandleFunc("POST /property/create", app.propertyCreatePost)
+	mux.Handle("GET /property/{id}", dynamic.ThenFunc(app.propertyView))
+
+	mux.Handle("GET /property/create", dynamic.ThenFunc(app.createPropertyPage))
+	mux.Handle("POST /property/create", dynamic.ThenFunc(app.propertyCreatePost))
 
 	standard := chain.New(app.recoverPanic, app.logRequest, commonHeaders)
 

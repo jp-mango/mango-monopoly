@@ -12,15 +12,18 @@ import (
 	"os"
 	"time"
 
+	"github.com/alexedwards/scs/postgresstore"
+	"github.com/alexedwards/scs/v2"
 	_ "github.com/lib/pq"
 
 	"github.com/joho/godotenv"
 )
 
 type application struct {
-	logger        *slog.Logger
-	properties    *models.PropertyModel
-	templateCache map[string]*template.Template
+	logger         *slog.Logger
+	properties     *models.PropertyModel
+	templateCache  map[string]*template.Template
+	sessionManager *scs.SessionManager
 }
 
 func main() {
@@ -51,10 +54,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	sessionManager := scs.New()
+	sessionManager.Store = postgresstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
+
 	app := &application{
-		logger:        logger,
-		properties:    &models.PropertyModel{DB: db},
-		templateCache: templateCache,
+		logger:         logger,
+		properties:     &models.PropertyModel{DB: db},
+		templateCache:  templateCache,
+		sessionManager: sessionManager,
 	}
 	//prints log message server is starting
 	logger.Info("starting server", "addr", *addr)

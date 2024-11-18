@@ -144,5 +144,7 @@ func (app *application) propertyCreatePost(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	app.sessionManager.Put(r.Context(), "flash", "Property successfully created!")
+
 	http.Redirect(w, r, fmt.Sprintf("/property/%d", prop.ID), http.StatusSeeOther)
 }
