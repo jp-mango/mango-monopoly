@@ -13,5 +13,8 @@ DROP TABLE IF EXISTS Properties;
 DROP TABLE IF EXISTS Counties;
 
 
-DROP TABLE IF EXISTS "Sessions";
+DROP TABLE IF EXISTS "sessions";
+
+
+DROP TABLE IF EXISTS users;
 
