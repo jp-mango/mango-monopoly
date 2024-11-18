@@ -3,20 +3,24 @@
 {{define "main"}}
 <div class="container mx-auto py-8">
 	<div class="px-4 sm:px-0">
-		<h3 class="text-base font-semibold leading-7 text-gray-900">Upcoming Sales</h3>
-		<p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">List of upcoming sales.</p>
+		<h3 class="text-base font-semibold leading-7 text-gray-900">Properties</h3>
+		<p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">List of properties</p>
 	</div>
 
 	<div class="mt-6 border-t border-gray-100">
 		<dl class="divide-y divide-gray-100">
 			<div class="py-6">
+				{{if .Properties}}
 				<ul role="list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
 					{{range .Properties}}
 					<li class="bg-white rounded-lg shadow-md p-4 flex flex-col justify-between">
 						<div class="text-sm">
 							<p class="font-medium text-gray-900">{{.Address.String}}</p>
 							<p class="text-gray-500">
-								${{FormatMoney .FairMarketValue.Int64}} | {{.PropertyType.String}}
+								Price: ${{FormatMoney .FairMarketValue.Int64}}
+							</p>
+							<p class="text-gray-500">
+								Property Type: {{.PropertyType.String}}
 							</p>
 						</div>
 						<div class="mt-2">
@@ -25,6 +29,10 @@
 					</li>
 					{{end}}
 				</ul>
+				{{else}}
+				<p class="text-gray-500">No properties available yet!, add one <a href="/property/create"
+						class="text-primary">here</a></p>
+				{{end}}
 			</div>
 		</dl>
 	</div>
