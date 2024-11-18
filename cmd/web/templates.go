@@ -7,6 +7,7 @@ import (
 	"mango-monopoly/internal/models"
 	"mango-monopoly/ui"
 	"path/filepath"
+	"strconv"
 )
 
 type templateData struct {
@@ -16,9 +17,30 @@ type templateData struct {
 	PropertyModel *models.PropertyModel
 }
 
+func formatMoney(price int64) string {
+	m := strconv.FormatInt(price, 10)
+	n := len(m)
+	if n <= 3 {
+		return m
+	}
+
+	var result string
+	for i := n - 1; i >= 0; i-- {
+		result = string(m[i]) + result
+		if (n-i)%3 == 0 && i != 0 {
+			result = "," + result
+		}
+	}
+	return result
+}
+
 func newTemplateCache() (map[string]*template.Template, error) {
 	// Initialize a new map to act as the cache.
 	cache := map[string]*template.Template{}
+
+	funcs := template.FuncMap{
+		"FormatMoney": formatMoney,
+	}
 
 	// Use the embed.FS to get a slice of all filepaths that match the pattern.
 	// Check if 'fs.Glob()' returns any errors or no files.
@@ -43,7 +65,7 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		}
 
 		// Parse the files using the embedded filesystem.
-		ts, err := template.ParseFS(ui.TemplateFiles, files...)
+		ts, err := template.New(name).Funcs(funcs).ParseFS(ui.TemplateFiles, files...)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing template %s: %w", name, err)
 		}
