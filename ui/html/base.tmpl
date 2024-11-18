@@ -15,6 +15,20 @@
 		{{template "nav" .}}
 	</header>
 	<main class="flex-grow">
+		{{with .Flash}}
+		<div class="bg-white border border-gray-300 rounded-lg shadow p-4 flex items-center space-x-3 z-50">
+			<div class="text-primary">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+					stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+				</svg>
+			</div>
+			<div class="text-sm font-medium text-gray-800">
+				{{.}}
+			</div>
+		</div>
+
+		{{end}}
 		{{template "main" .}}
 	</main>
 	<footer class="bg-slate-300">
