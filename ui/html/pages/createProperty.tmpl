@@ -61,7 +61,6 @@
 				{{end}}
 				<select name="county_id" id="county_id"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
-					<option value="">Select a county</option>
 					<option value="1" {{if eq .Form.County "1" }}selected{{end}}>Appling</option>
 					<option value="2" {{if eq .Form.County "2" }}selected{{end}}>Atkinson</option>
 					<option value="3" {{if eq .Form.County "3" }}selected{{end}}>Bacon</option>
@@ -106,7 +105,7 @@
 				{{with .Form.FieldErrors.land_value}}
 				<label class="error text-red-600">{{.}}</label>
 				{{end}}
-				<input type="number" step="100" name="land_value" id="land_value" value="{{.Form.LandValue}}"
+				<input type="number" name="land_value" id="land_value" value="{{.Form.LandValue}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -118,8 +117,7 @@
 				{{with .Form.FieldErrors.building_value}}
 				<label class="error text-red-600">{{.}}</label>
 				{{end}}
-				<input type="number" step="100" name="building_value" id="building_value"
-					value="{{.Form.BuildingValue}}"
+				<input type="number" name="building_value" id="building_value" value="{{.Form.BuildingValue}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -131,8 +129,7 @@
 				{{with .Form.FieldErrors.fair_market_value}}
 				<label class="error text-red-600">{{.}}</label>
 				{{end}}
-				<input type="number" step="100" name="fair_market_value" id="fair_market_value"
-					value="{{.Form.FairMarketValue}}"
+				<input type="number" name="fair_market_value" id="fair_market_value" value="{{.Form.FairMarketValue}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -156,7 +153,7 @@
 				{{with .Form.FieldErrors.square_footage}}
 				<label class="error text-red-600">{{.}}</label>
 				{{end}}
-				<input type="number" step="50" name="square_footage" id="square_footage" value="{{.Form.SquareFootage}}"
+				<input type="number" name="square_footage" id="square_footage" value="{{.Form.SquareFootage}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
