@@ -14,6 +14,7 @@ type templateData struct {
 	CurrentYear int
 	Property    models.Property
 	Properties  []models.Property
+	Form        any
 	Flash       string
 }
 
