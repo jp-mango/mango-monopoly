@@ -29,6 +29,7 @@ type application struct {
 }
 
 func main() {
+	//for debugging "../../.env"
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -84,7 +85,7 @@ func main() {
 	//prints log message server is starting
 	logger.Info("starting server", "addr", srv.Addr)
 
-	//start a new web server, passing in TCP addr and the servemux.
+	//degugging path "../../tls/localhost.pem", "../../tls/localhost-key.pem"
 	err = srv.ListenAndServeTLS("./tls/localhost.pem", "./tls/localhost-key.pem")
 	logger.Error(err.Error())
 	os.Exit(1)
