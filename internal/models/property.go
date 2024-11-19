@@ -99,6 +99,26 @@ func (m *PropertyModel) Get(id int64) (*Property, error) {
 	return &property, nil
 }
 
+func (m *PropertyModel) GetByParcel(parcel_id string) (*sql.Row, error) {
+	if parcel_id == "" {
+		return nil, ErrNoRecord
+	}
+
+	query := `
+		SELECT property_id,
+		WHERE parcel_id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	row := m.DB.QueryRowContext(ctx, query, parcel_id)
+	if row != nil {
+		return row, nil
+	}
+
+	return nil, ErrNoRecord
+}
+
 func (m *PropertyModel) Latest() ([]Property, error) {
 	query := `
 		SELECT property_id,
