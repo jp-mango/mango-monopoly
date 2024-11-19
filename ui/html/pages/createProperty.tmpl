@@ -1,13 +1,16 @@
 {{define "title"}}Add Property{{end}}
-<!--TODO: Form Validation for user entries-->
+
 {{define "main"}}
 <form action="/property/create" method="post">
 	<div class="grid grid-cols-4 gap-4 px-5">
-		<!-- Situs -->
+		<!-- Addy -->
 		<div class="col-span-4">
-			<label for="situs" class="block text-sm font-medium text-gray-900">Situs</label>
+			<label for="Address" class="block text-sm font-medium text-gray-900">Address</label>
 			<div class="mt-2">
-				<input type="text" name="situs" id="situs"
+				{{with .Form.FieldErrors.address}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="text" name="address" id="address" value="{{.Form.Address}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -16,7 +19,10 @@
 		<div class="col-span-2">
 			<label for="city" class="block text-sm font-medium text-gray-900">City</label>
 			<div class="mt-2">
-				<input type="text" name="city" id="city"
+				{{with .Form.FieldErrors.city}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="text" name="city" id="city" value="{{.Form.City}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -25,7 +31,10 @@
 		<div class="col-span-1">
 			<label for="state" class="block text-sm font-medium text-gray-900">State</label>
 			<div class="mt-2">
-				<input type="text" name="state" id="state"
+				{{with .Form.FieldErrors.state}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="text" name="state" id="state" value="{{.Form.State}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -34,27 +43,33 @@
 		<div class="col-span-1">
 			<label for="zip_code" class="block text-sm font-medium text-gray-900">ZIP Code</label>
 			<div class="mt-2">
-				<input type="text" name="zip_code" id="zip_code"
+				{{with .Form.FieldErrors.zip_code}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="text" name="zip_code" id="zip_code" value="{{.Form.Zip}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
 
 		<!-- County ID -->
+		<!--TODO: Add available counties in a list-->
 		<div class="col-span-2">
 			<label for="county_id" class="block text-sm font-medium text-gray-900">County</label>
 			<div class="mt-2">
+				{{with .Form.FieldErrors.county}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
 				<select name="county_id" id="county_id"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
-					<!-- TODO: generate a list of all counties in GA, this is just filler -->
 					<option value="">Select a county</option>
-					<option value="1">Appling</option>
-					<option value="2">Atkinson</option>
-					<option value="3">Bacon</option>
-					<option value="4">Baker</option>
-					<option value="5">Baldwin</option>
-					<option value="6">Banks</option>
-					<option value="7">Barrow</option>
-					<option value="8">Gwinnett</option>
+					<option value="1" {{if eq .Form.County "1" }}selected{{end}}>Appling</option>
+					<option value="2" {{if eq .Form.County "2" }}selected{{end}}>Atkinson</option>
+					<option value="3" {{if eq .Form.County "3" }}selected{{end}}>Bacon</option>
+					<option value="4" {{if eq .Form.County "4" }}selected{{end}}>Baker</option>
+					<option value="5" {{if eq .Form.County "5" }}selected{{end}}>Baldwin</option>
+					<option value="6" {{if eq .Form.County "6" }}selected{{end}}>Banks</option>
+					<option value="7" {{if eq .Form.County "7" }}selected{{end}}>Barrow</option>
+					<option value="8" {{if eq .Form.County "8" }}selected{{end}}>Gwinnett</option>
 				</select>
 			</div>
 		</div>
@@ -63,16 +78,23 @@
 		<div class="col-span-2">
 			<label for="parcel_id" class="block text-sm font-medium text-gray-900">Parcel ID</label>
 			<div class="mt-2">
-				<input type="text" name="parcel_id" id="parcel_id"
+				{{with .Form.FieldErrors.parcel_id}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="text" name="parcel_id" id="parcel_id" value="{{.Form.ParcelID}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
 
 		<!-- Property Type -->
+		<!--TODO: add available property types in a dropdown list-->
 		<div class="col-span-2">
 			<label for="property_type" class="block text-sm font-medium text-gray-900">Property Type</label>
 			<div class="mt-2">
-				<input type="text" name="property_type" id="property_type"
+				{{with .Form.FieldErrors.property_type}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="text" name="property_type" id="property_type" value="{{.Form.PropertyType}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -81,7 +103,10 @@
 		<div class="col-span-1">
 			<label for="land_value" class="block text-sm font-medium text-gray-900">Land Value</label>
 			<div class="mt-2">
-				<input type="number" name="land_value" id="land_value"
+				{{with .Form.FieldErrors.land_value}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="number" step="100" name="land_value" id="land_value" value="{{.Form.LandValue}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -90,7 +115,11 @@
 		<div class="col-span-1">
 			<label for="building_value" class="block text-sm font-medium text-gray-900">Building Value</label>
 			<div class="mt-2">
-				<input type="number" name="building_value" id="building_value"
+				{{with .Form.FieldErrors.building_value}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="number" step="100" name="building_value" id="building_value"
+					value="{{.Form.BuildingValue}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -99,7 +128,11 @@
 		<div class="col-span-1">
 			<label for="fair_market_value" class="block text-sm font-medium text-gray-900">Fair Market Value</label>
 			<div class="mt-2">
-				<input type="number" name="fair_market_value" id="fair_market_value"
+				{{with .Form.FieldErrors.fair_market_value}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="number" step="100" name="fair_market_value" id="fair_market_value"
+					value="{{.Form.FairMarketValue}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -108,7 +141,10 @@
 		<div class="col-span-1">
 			<label for="lot_size" class="block text-sm font-medium text-gray-900">Lot Size</label>
 			<div class="mt-2">
-				<input type="number" step="0.01" name="lot_size" id="lot_size"
+				{{with .Form.FieldErrors.lot_size}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="number" step="0.1" name="lot_size" id="lot_size" value="{{.Form.LotSize}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -117,7 +153,10 @@
 		<div class="col-span-1">
 			<label for="square_footage" class="block text-sm font-medium text-gray-900">Square Footage</label>
 			<div class="mt-2">
-				<input type="number" name="square_footage" id="square_footage"
+				{{with .Form.FieldErrors.square_footage}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="number" step="50" name="square_footage" id="square_footage" value="{{.Form.SquareFootage}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -126,7 +165,10 @@
 		<div class="col-span-1">
 			<label for="bedrooms" class="block text-sm font-medium text-gray-900">Bedrooms</label>
 			<div class="mt-2">
-				<input type="number" name="bedrooms" id="bedrooms"
+				{{with .Form.FieldErrors.bedrooms}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="number" step="1" name="bedrooms" id="bedrooms" value="{{.Form.Bedrooms}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -135,7 +177,10 @@
 		<div class="col-span-1">
 			<label for="bathrooms" class="block text-sm font-medium text-gray-900">Bathrooms</label>
 			<div class="mt-2">
-				<input type="number" name="bathrooms" id="bathrooms" step="0.01"
+				{{with .Form.FieldErrors.bathrooms}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="number" step=".5" name="bathrooms" id="bathrooms" value="{{.Form.Bathrooms}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -144,7 +189,10 @@
 		<div class="col-span-1">
 			<label for="year_built" class="block text-sm font-medium text-gray-900">Year Built</label>
 			<div class="mt-2">
-				<input type="number" name="year_built" id="year_built"
+				{{with .Form.FieldErrors.year_built}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="number" name="year_built" id="year_built" value="{{.Form.YearBuilt}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -153,7 +201,10 @@
 		<div class="col-span-4">
 			<label for="tax_assessor_url" class="block text-sm font-medium text-gray-900">Tax Assessor URL</label>
 			<div class="mt-2">
-				<input type="url" name="tax_assessor_url" id="tax_assessor_url"
+				{{with .Form.FieldErrors.tax_assessor_url}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="url" name="tax_assessor_url" id="tax_assessor_url" value="{{.Form.TaxURL}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
@@ -162,7 +213,10 @@
 		<div class="col-span-4">
 			<label for="zillow_url" class="block text-sm font-medium text-gray-900">Zillow URL</label>
 			<div class="mt-2">
-				<input type="url" name="zillow_url" id="zillow_url"
+				{{with .Form.FieldErrors.zillow_url}}
+				<label class="error text-red-600">{{.}}</label>
+				{{end}}
+				<input type="url" name="zillow_url" id="zillow_url" value="{{.Form.ZillowURL}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
