@@ -99,9 +99,9 @@ func (m *PropertyModel) Get(id int64) (*Property, error) {
 	return &property, nil
 }
 
-func (m *PropertyModel) GetByParcel(parcel_id string) (*sql.Row, error) {
+func (m *PropertyModel) GetByParcel(parcel_id string) bool {
 	if parcel_id == "" {
-		return nil, ErrNoRecord
+		return false
 	}
 
 	query := `
@@ -113,10 +113,10 @@ func (m *PropertyModel) GetByParcel(parcel_id string) (*sql.Row, error) {
 
 	row := m.DB.QueryRowContext(ctx, query, parcel_id)
 	if row != nil {
-		return row, nil
+		return true
 	}
 
-	return nil, ErrNoRecord
+	return false
 }
 
 func (m *PropertyModel) Latest() ([]Property, error) {
