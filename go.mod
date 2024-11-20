@@ -12,3 +12,5 @@ require (
 	github.com/alexedwards/scs/v2 v2.8.0
 	github.com/justinas/alice v1.2.0
 )
+
+require github.com/go-playground/form/v4 v4.2.1 // indirect
