@@ -15,6 +15,7 @@ import (
 
 	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
+	"github.com/go-playground/form/v4"
 	_ "github.com/lib/pq"
 
 	"github.com/joho/godotenv"
@@ -24,6 +25,7 @@ type application struct {
 	logger         *slog.Logger
 	properties     *models.PropertyModel
 	templateCache  map[string]*template.Template
+	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
 	users          *models.UserModel
 }
@@ -40,7 +42,7 @@ func main() {
 	flag.Parse()
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		//AddSource: true,
+		AddSource: true,
 	}))
 
 	db, err := openDB(*dsn)
@@ -56,6 +58,7 @@ func main() {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
+	formDecoder := form.NewDecoder()
 
 	sessionManager := scs.New()
 	sessionManager.Store = postgresstore.New(db)
@@ -65,6 +68,7 @@ func main() {
 		logger:         logger,
 		properties:     &models.PropertyModel{DB: db},
 		templateCache:  templateCache,
+		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
 		users:          &models.UserModel{DB: db},
 	}
