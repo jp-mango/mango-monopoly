@@ -86,25 +86,35 @@ func (app *application) propertyCreatePost(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	form := propertyCreateForm{
-		Address:         r.PostForm.Get("address"),
-		City:            r.PostForm.Get("city"),
-		State:           r.PostForm.Get("state"),
-		Zip:             r.PostForm.Get("zip_code"),
-		County:          r.PostForm.Get("county_id"),
-		ParcelID:        r.PostForm.Get("parcel_id"),
-		PropertyType:    r.PostForm.Get("property_type"),
-		LandValue:       r.PostForm.Get("land_value"),
-		BuildingValue:   r.PostForm.Get("building_value"),
-		FairMarketValue: r.PostForm.Get("fair_market_value"),
-		LotSize:         r.PostForm.Get("lot_size"),
-		SquareFootage:   r.PostForm.Get("square_footage"),
-		Bedrooms:        r.PostForm.Get("bedrooms"),
-		Bathrooms:       r.PostForm.Get("bathrooms"),
-		YearBuilt:       r.PostForm.Get("year_built"),
-		TaxURL:          r.PostForm.Get("tax_assessor_url"),
-		ZillowURL:       r.PostForm.Get("zillow_url"),
+	var form propertyCreateForm
+
+	err = app.formDecoder.Decode(&form, r.PostForm)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
 	}
+
+	/*
+		form := propertyCreateForm{
+			Address:         r.PostForm.Get("address"),
+			City:            r.PostForm.Get("city"),
+			State:           r.PostForm.Get("state"),
+			Zip:             r.PostForm.Get("zip_code"),
+			County:          r.PostForm.Get("county_id"),
+			ParcelID:        r.PostForm.Get("parcel_id"),
+			PropertyType:    r.PostForm.Get("property_type"),
+			LandValue:       r.PostForm.Get("land_value"),
+			BuildingValue:   r.PostForm.Get("building_value"),
+			FairMarketValue: r.PostForm.Get("fair_market_value"),
+			LotSize:         r.PostForm.Get("lot_size"),
+			SquareFootage:   r.PostForm.Get("square_footage"),
+			Bedrooms:        r.PostForm.Get("bedrooms"),
+			Bathrooms:       r.PostForm.Get("bathrooms"),
+			YearBuilt:       r.PostForm.Get("year_built"),
+			TaxURL:          r.PostForm.Get("tax_assessor_url"),
+			ZillowURL:       r.PostForm.Get("zillow_url"),
+		}
+	*/
 
 	prop := models.Property{}
 
@@ -185,7 +195,7 @@ func (app *application) propertyCreatePost(w http.ResponseWriter, r *http.Reques
 	prop.ZillowURL = sql.NullString{String: r.PostForm.Get("zillow_url"), Valid: true}
 
 	// Check for field errors
-	if len(form.FieldErrors) > 0 {
+	if !form.Valid() {
 		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, r, http.StatusUnprocessableEntity, "createProperty.tmpl", data)
@@ -204,13 +214,23 @@ func (app *application) propertyCreatePost(w http.ResponseWriter, r *http.Reques
 	http.Redirect(w, r, fmt.Sprintf("/property/%d", prop.ID), http.StatusSeeOther)
 }
 
+type userSignupForm struct {
+	Email               string `form:"email"`
+	Username            string `form:"username"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
 func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
+	data.Form = userSignupForm{}
 	app.render(w, r, http.StatusOK, "signup.tmpl", data)
 }
 
 func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Create a new user...")
+	//var form userSignupForm
+
+	//err := app
 }
 
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
