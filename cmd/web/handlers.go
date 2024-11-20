@@ -80,41 +80,13 @@ type propertyCreateForm struct {
 }
 
 func (app *application) propertyCreatePost(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
-		return
-	}
-
 	var form propertyCreateForm
 
-	err = app.formDecoder.Decode(&form, r.PostForm)
+	err := app.decodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
-
-	/*
-		form := propertyCreateForm{
-			Address:         r.PostForm.Get("address"),
-			City:            r.PostForm.Get("city"),
-			State:           r.PostForm.Get("state"),
-			Zip:             r.PostForm.Get("zip_code"),
-			County:          r.PostForm.Get("county_id"),
-			ParcelID:        r.PostForm.Get("parcel_id"),
-			PropertyType:    r.PostForm.Get("property_type"),
-			LandValue:       r.PostForm.Get("land_value"),
-			BuildingValue:   r.PostForm.Get("building_value"),
-			FairMarketValue: r.PostForm.Get("fair_market_value"),
-			LotSize:         r.PostForm.Get("lot_size"),
-			SquareFootage:   r.PostForm.Get("square_footage"),
-			Bedrooms:        r.PostForm.Get("bedrooms"),
-			Bathrooms:       r.PostForm.Get("bathrooms"),
-			YearBuilt:       r.PostForm.Get("year_built"),
-			TaxURL:          r.PostForm.Get("tax_assessor_url"),
-			ZillowURL:       r.PostForm.Get("zillow_url"),
-		}
-	*/
 
 	prop := models.Property{}
 
