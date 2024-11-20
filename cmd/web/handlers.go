@@ -211,8 +211,10 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 
 	form.CheckField(validator.NotBlank(form.Email), "email", "This field cannot be blank")
 	form.CheckField(validator.Matches(form.Email, validator.EmailRX), "email", "Please enter a valid email")
+	form.CheckField(!app.users.CheckUsers(form.Email), "email", "This email is already in use")
 
 	form.CheckField(validator.NotBlank(form.Username), "username", "This field cannot be blank")
+	form.CheckField(!app.users.CheckUsers(form.Username), "username", "Username already in use")
 
 	form.CheckField(validator.NotBlank(form.Password), "password", "This field cannot be blank")
 	form.CheckField(validator.MinChars(form.Password, 8), "password", "Password must be at least 8 digits long")
@@ -228,14 +230,7 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 
 	err = app.users.Insert(form.Username, form.Email, form.Password)
 	if err != nil {
-		if errors.Is(err, models.ErrDuplicateEmail) {
-			form.AddFieldError("email", "Email already in use")
-			data := app.newTemplateData(r)
-			data.Form = form
-			app.render(w, r, http.StatusUnprocessableEntity, "signup.tmpl", data)
-		} else {
-			app.serverError(w, r, err)
-		}
+		app.serverError(w, r, err)
 		return
 	}
 
