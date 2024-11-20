@@ -11,11 +11,12 @@ import (
 )
 
 type templateData struct {
-	CurrentYear int
-	Property    models.Property
-	Properties  []models.Property
-	Form        any
-	Flash       string
+	CurrentYear     int
+	Property        models.Property
+	Properties      []models.Property
+	Form            any
+	Flash           string
+	IsAuthenticated bool
 }
 
 func formatMoney(price int64) string {
