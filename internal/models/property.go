@@ -112,11 +112,7 @@ func (m *PropertyModel) GetByParcel(parcel_id string) bool {
 	defer cancel()
 
 	row := m.DB.QueryRowContext(ctx, query, parcel_id)
-	if row != nil {
-		return true
-	}
-
-	return false
+	return row != nil
 }
 
 func (m *PropertyModel) Latest() ([]Property, error) {
