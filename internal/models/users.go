@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"database/sql"
+	"log"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -18,6 +19,30 @@ type User struct {
 
 type UserModel struct {
 	DB *sql.DB
+}
+
+func (m *UserModel) CheckUsers(tableField string) bool {
+	if tableField == "" {
+		return false
+	}
+
+	query := `
+		SELECT id FROM users
+		WHERE username = $1 OR email = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var id int
+	err := m.DB.QueryRowContext(ctx, query, tableField).Scan(&id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		}
+		log.Println("DB query error:", err)
+		return false
+	}
+	return true
 }
 
 func (m *UserModel) Insert(username, email, password string) error {
