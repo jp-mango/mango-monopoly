@@ -13,4 +13,7 @@ require (
 	github.com/justinas/alice v1.2.0
 )
 
-require github.com/go-playground/form/v4 v4.2.1 // indirect
+require (
+	github.com/go-playground/form/v4 v4.2.1 // indirect
+	golang.org/x/crypto v0.29.0 // indirect
+)
