@@ -1,8 +1,11 @@
 package models
 
 import (
+	"context"
 	"database/sql"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -17,7 +20,25 @@ type UserModel struct {
 	DB *sql.DB
 }
 
-func (m *UserModel) Insert(name, email, password string) error {
+func (m *UserModel) Insert(username, email, password string) error {
+	hashedPW, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	if err != nil {
+		return nil
+	}
+
+	query := `
+		INSERT INTO users (username, email, hashed_password, created)
+		VALUES ($1, $2, $3, NOW())`
+
+	args := []any{username, email, string(hashedPW)}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err = m.DB.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
