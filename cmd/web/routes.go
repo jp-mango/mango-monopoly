@@ -13,7 +13,7 @@ func (app *application) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
-	dynamic := chain.New(app.sessionManager.LoadAndSave, noSurf)
+	dynamic := chain.New(app.sessionManager.LoadAndSave, noSurf, app.authenticate)
 
 	mux.Handle("GET /{$}", dynamic.ThenFunc(app.home)) //the {$} prevents wildcard matching
 	mux.Handle("GET /property/{id}", dynamic.ThenFunc(app.propertyView))
