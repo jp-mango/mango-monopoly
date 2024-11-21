@@ -2,6 +2,7 @@
 
 {{define "main"}}
 <form action="/property/create" method="post">
+	<input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
 	<div class="grid grid-cols-4 gap-4 px-5">
 		<!-- Addy -->
 		<div class="col-span-4">

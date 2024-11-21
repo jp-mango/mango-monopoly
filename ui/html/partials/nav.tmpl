@@ -87,6 +87,7 @@
 		<div class="hidden lg:flex lg:flex-1 lg:justify-end">
 			{{if .IsAuthenticated}}
 			<form action='/user/logout' method='POST'>
+				<input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
 				<button>Logout</button>
 			</form>
 			{{else}}
@@ -110,7 +111,10 @@
 			<a href="/" class="block py-3 text-gray-900 hover:text-primary">Home</a>
 			<a href="/properties" class="block py-3 text-gray-900 hover:text-primary">Properties</a>
 			{{if .IsAuthenticated}}
-			<a href="/user/logout" class="block py-3 text-gray-900 hover:text-primary">Log out</a>
+			<form action='/user/logout' method='POST'>
+				<input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+				<button>Logout</button>
+			</form>
 			{{else}}
 			<a href="/user/login" class="block py-3 text-gray-900 hover:text-primary">Log in</a>
 			<a href="/user/signup" class="block py-3 text-gray-900 hover:text-primary">Sign up</a>
