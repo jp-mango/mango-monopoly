@@ -114,7 +114,7 @@ func (app *application) propertyCreatePost(w http.ResponseWriter, r *http.Reques
 	// Parcel ID
 	prop.ParcelID = sql.NullString{String: r.PostForm.Get("parcel_id"), Valid: true}
 	form.CheckField(validator.NotBlank(prop.ParcelID.String), "parcel_id", "Cannot be left blank")
-	form.CheckField(!app.properties.GetByParcel(prop.ParcelID.String), "parcel_id", "Property already exists")
+	form.CheckField(app.properties.GetByParcel(prop.ParcelID.String), "parcel_id", "Property already exists")
 
 	// Property Type
 	prop.PropertyType = sql.NullString{String: r.PostForm.Get("property_type"), Valid: true}
@@ -136,7 +136,7 @@ func (app *application) propertyCreatePost(w http.ResponseWriter, r *http.Reques
 		form.AddFieldError("fair_market_value", errMsg)
 	}
 
-	valid, errMsg = validator.ValidateInt(r.PostForm.Get("lot_size"), 64)
+	valid, errMsg = validator.ValidateFloat(r.PostForm.Get("lot_size"), 64)
 	if !valid {
 		form.AddFieldError("lot_size", errMsg)
 	}
