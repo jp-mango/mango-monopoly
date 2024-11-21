@@ -290,7 +290,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.sessionManager.Put(r.Context(), "authenticateUserID", id)
+	app.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 
 	//TODO: change redirect path
 	http.Redirect(w, r, "/property/create", http.StatusSeeOther)

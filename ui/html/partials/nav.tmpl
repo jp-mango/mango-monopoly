@@ -86,7 +86,9 @@
 		</div>
 		<div class="hidden lg:flex lg:flex-1 lg:justify-end">
 			{{if .IsAuthenticated}}
-			<a href="/user/logout" class="text-sm font-semibold leading-6 text-gray-900 hover:text-primary">Log Out</a>
+			<form action='/user/logout' method='POST'>
+				<button>Logout</button>
+			</form>
 			{{else}}
 			<a href="/user/login" class="text-sm font-semibold leading-6 text-gray-900 hover:text-primary">Log in</a>
 			<a href="/user/signup" class="text-sm font-semibold leading-6 text-gray-900 hover:text-primary">Sign Up</a>
@@ -107,7 +109,12 @@
 		<div class="space-y-6 text-lg text-center py-20">
 			<a href="/" class="block py-3 text-gray-900 hover:text-primary">Home</a>
 			<a href="/properties" class="block py-3 text-gray-900 hover:text-primary">Properties</a>
+			{{if .IsAuthenticated}}
+			<a href="/user/logout" class="block py-3 text-gray-900 hover:text-primary">Log out</a>
+			{{else}}
 			<a href="/user/login" class="block py-3 text-gray-900 hover:text-primary">Log in</a>
+			<a href="/user/signup" class="block py-3 text-gray-900 hover:text-primary">Sign up</a>
+			{{end}}
 		</div>
 	</div>
 </header>
