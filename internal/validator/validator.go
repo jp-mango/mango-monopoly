@@ -69,9 +69,11 @@ func ValidateInt(value string, bitSize int) (bool, string) {
 	if value == "" {
 		return false, "This field cannot be blank"
 	}
-	_, err := strconv.ParseInt(value, 10, bitSize)
+	num, err := strconv.ParseInt(value, 10, bitSize)
 	if err != nil {
 		return false, "Invalid number"
+	} else if num < 0 {
+		return false, "Value must be greater >= 0"
 	}
 	return true, ""
 }
@@ -81,9 +83,11 @@ func ValidateFloat(value string, bitSize int) (bool, string) {
 	if value == "" {
 		return false, "This field cannot be blank"
 	}
-	_, err := strconv.ParseFloat(value, bitSize)
+	num, err := strconv.ParseFloat(value, bitSize)
 	if err != nil {
 		return false, "Invalid float"
+	} else if num < 0 {
+		return false, "Value must be greater >= 0"
 	}
 	return true, ""
 }
