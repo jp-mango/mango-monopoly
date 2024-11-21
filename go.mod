@@ -14,3 +14,5 @@ require (
 	github.com/justinas/alice v1.2.0
 	golang.org/x/crypto v0.29.0
 )
+
+require github.com/justinas/nosurf v1.1.1
