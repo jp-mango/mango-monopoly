@@ -13,7 +13,7 @@
 			<div>
 				<label for="email" class="block text-sm/6 font-medium text-gray-900">Email</label>
 				{{with.Form.FieldErrors.email}}
-				<label class="error">{{.}}</label>
+				<label class="error text-danger">{{.}}</label>
 				{{end}}
 				<div class="mt-2">
 					<input id="email" name="email" type="text" value="{{.Form.Email}}" autocomplete="email"
@@ -24,7 +24,7 @@
 			<div>
 				<label for="username" class="block text-sm/6 font-medium text-gray-900">Username</label>
 				{{with .Form.FieldErrors.username}}
-				<label class="error">{{.}}</label>
+				<label class="error text-danger">{{.}}</label>
 				{{end}}
 				<div class="mt-2">
 					<input id="username" name="username" type="text" value="{{.Form.Username}}" autocomplete="text"
