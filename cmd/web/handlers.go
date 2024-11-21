@@ -59,24 +59,24 @@ func (app *application) createPropertyPage(w http.ResponseWriter, r *http.Reques
 }
 
 type propertyCreateForm struct {
-	Address         string
-	City            string
-	State           string
-	Zip             string
-	County          string
-	ParcelID        string
-	PropertyType    string
-	LandValue       string
-	BuildingValue   string
-	FairMarketValue string
-	LotSize         string
-	SquareFootage   string
-	Bedrooms        string
-	Bathrooms       string
-	YearBuilt       string
-	TaxURL          string
-	ZillowURL       string
-	validator.Validator
+	Address             string `form:"address"`
+	City                string `form:"city"`
+	State               string `form:"state"`
+	Zip                 string `form:"zip_code"`
+	County              string `form:"county_id"`
+	ParcelID            string `form:"parcel_id"`
+	PropertyType        string `form:"property_type"`
+	LandValue           string `form:"land_value"`
+	BuildingValue       string `form:"building_value"`
+	FairMarketValue     string `form:"fair_market_value"`
+	LotSize             string `form:"lot_size"`
+	SquareFootage       string `form:"square_footage"`
+	Bedrooms            string `form:"bedrooms"`
+	Bathrooms           string `form:"bathrooms"`
+	YearBuilt           string `form:"year_built"`
+	TaxURL              string `form:"tax_assessor_url"`
+	ZillowURL           string `form:"zillow_url"`
+	validator.Validator `form:"-"`
 }
 
 func (app *application) propertyCreatePost(w http.ResponseWriter, r *http.Request) {
