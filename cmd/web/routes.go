@@ -1,17 +1,16 @@
 package main
 
 import (
-	"mango-monopoly/ui"
 	"net/http"
 
 	chain "github.com/justinas/alice"
 )
 
 func (app *application) routes() http.Handler {
-	//initialize a new serve multiplexer & register home as '/'
 	mux := http.NewServeMux()
 
-	mux.Handle("GET /static/", http.FileServerFS(ui.TemplateFiles))
+	fileServer := http.FileServer(http.Dir("./ui/static/"))
+	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
 	dynamic := chain.New(app.sessionManager.LoadAndSave, noSurf, app.authenticate)
 
