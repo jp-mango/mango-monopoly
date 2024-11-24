@@ -278,6 +278,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 			data := app.newTemplateData(r)
 			data.Form = form
 			app.render(w, r, http.StatusUnprocessableEntity, "login.tmpl", data)
+			//TODO: search for error of no email found then redirect user to sign up page
 		} else {
 			app.serverError(w, r, err)
 		}

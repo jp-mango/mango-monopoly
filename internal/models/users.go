@@ -79,6 +79,7 @@ func (m *UserModel) Authenticate(email, password string) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
+	// TODO:Figure out error returned here to search for it in handler
 	err := m.DB.QueryRowContext(ctx, stmt, email).Scan(&id, &hashedPW)
 	if err != nil {
 		if err == sql.ErrNoRows {
