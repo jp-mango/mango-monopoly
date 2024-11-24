@@ -269,6 +269,7 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, r, http.StatusUnprocessableEntity, "login.tmpl", data)
+		return
 	}
 
 	id, err := app.users.Authenticate(form.Email, form.Password)
