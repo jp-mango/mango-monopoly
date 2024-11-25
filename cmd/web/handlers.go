@@ -311,3 +311,9 @@ func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
+
+func (app *application) scrapeHandler(w http.ResponseWriter, r *http.Request) {
+	//TODO : implement handler
+
+	fmt.Fprintf(w, "Scraping completed")
+}
