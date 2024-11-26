@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -25,16 +26,15 @@ func (gco *GwinnettScraper) Scrape() error {
 
 	var foundLink bool
 	var link string
-	var pythonError error // To capture Python script errors
+	var pythonError error
 
 	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		if e.Text == "List of Properties" {
 			foundLink = true
-			link = strings.SplitN(gco.Domain+e.Attr("href"), "?", 2)[0]
+			rawLink := e.Attr("href")
+			link = fmt.Sprintf("https://%s", strings.TrimPrefix(gco.Domain+rawLink, "www."))
 			fmt.Println("Found link:", link)
 
-			//TODO: implement working command below into Go script
-			//TODO: python3 ./scraper/main.py https://www.gwinnetttaxcommissioner.com/documents/d/egov/decembertaxsalelist Gwinnett
 			scriptPath, err := filepath.Abs("./scraper/main.py")
 			if err != nil {
 				fmt.Printf("Error getting absolute path: %v\n", err)
@@ -42,14 +42,21 @@ func (gco *GwinnettScraper) Scrape() error {
 				return
 			}
 
-			// Execute the Python script
-			pythonCMD := exec.Command("python3", scriptPath, link, "Gwinnett")
+			fmt.Println("Script path:", scriptPath)
+
+			pythonCMD := exec.Command("uv", "run", scriptPath, link, "Gwinnett")
+
+			// Ensure the environment PATH is passed
+			pythonCMD.Env = append(os.Environ(), "PATH="+os.Getenv("PATH"))
+
+			// Capture the combined output of the command
 			output, err := pythonCMD.CombinedOutput()
 			if err != nil {
-				fmt.Printf("Python script error: %v\n", err)
+				fmt.Printf("Python script error: %v\nOutput: %s\n", err, string(output))
 				pythonError = fmt.Errorf("error running Python script: %w", err)
 				return
 			}
+
 			fmt.Println("Python script output:", string(output))
 		}
 	})
