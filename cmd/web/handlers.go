@@ -319,8 +319,8 @@ func (app *application) scrapeHandler(w http.ResponseWriter, r *http.Request) {
 		Domain:  "www.gwinnetttaxcommissioner.com",
 	}
 
-	err := gwinnettData.Scrape().Error()
-	if err != "" {
+	err := gwinnettData.Scrape()
+	if err != nil {
 		fmt.Fprintf(w, "Error: %v\n", err)
 	} else {
 		fmt.Fprintf(w, "Scraping completed")
