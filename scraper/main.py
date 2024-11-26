@@ -1,20 +1,31 @@
-from os import error
+import sys
 from datetime import datetime
 import tabula
+import os
 
 
 def main():
-    gwinnettUpcomingSales = (
-        "https://www.gwinnetttaxcommissioner.com/documents/d/egov/decembertaxsalelist"
-    )
-    pdfConvert(gwinnettUpcomingSales, "Gwinnett")
+    if len(sys.argv) < 3:
+        print("Usage: python main.py <link> <county>")
+        sys.exit(1)
+
+    link = sys.argv[1]
+    county = sys.argv[2]
+
+    pdfConvert(link, county)
 
 
-def pdfConvert(link: str, county: str) -> error:
+def pdfConvert(link: str, county: str):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    filepath = f"./scraper/{county}/{county}UpcomingSales{timestamp}.csv"
-    tabula.io.convert_into(link, filepath, output_format="csv", pages="all")
+    directory = f"./scraper/{county}"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    filepath = os.path.join(directory, f"{county}UpcomingSales{timestamp}.csv")
+    tabula.convert_into(link, filepath, output_format="csv", pages="all")
+
+    print(f"PDF downloaded and converted to CSV at {filepath}")
 
 
 if __name__ == "__main__":

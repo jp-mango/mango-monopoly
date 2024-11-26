@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mango-monopoly/internal/models"
 	"mango-monopoly/internal/validator"
+	"mango-monopoly/scraper"
 	"net/http"
 	"strconv"
 )
@@ -313,7 +314,15 @@ func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) scrapeHandler(w http.ResponseWriter, r *http.Request) {
-	//TODO : implement handler
+	gwinnettData := scraper.GwinnettScraper{
+		Webpage: "https://www.gwinnetttaxcommissioner.com/property-tax/delinquent_tax/tax-liens-tax-sales",
+		Domain:  "www.gwinnetttaxcommissioner.com",
+	}
 
-	fmt.Fprintf(w, "Scraping completed")
+	err := gwinnettData.Scrape().Error()
+	if err != "" {
+		fmt.Fprintf(w, "Error: %v\n", err)
+	} else {
+		fmt.Fprintf(w, "Scraping completed")
+	}
 }
