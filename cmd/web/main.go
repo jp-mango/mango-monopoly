@@ -32,7 +32,7 @@ type application struct {
 
 func main() {
 	//for debugging "../../.env"
-	err := godotenv.Load("../../.env")
+	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -58,6 +58,7 @@ func main() {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
+
 	formDecoder := form.NewDecoder()
 
 	sessionManager := scs.New()
@@ -90,7 +91,7 @@ func main() {
 	logger.Info("starting server", "addr", srv.Addr)
 
 	//debugging path "../../tls/localhost.pem", "../../tls/localhost-key.pem"
-	err = srv.ListenAndServeTLS("../../tls/localhost.pem", "../../tls/localhost-key.pem")
+	err = srv.ListenAndServeTLS("./tls/localhost.pem", "./tls/localhost-key.pem")
 	logger.Error(err.Error())
 	os.Exit(1)
 }
