@@ -314,15 +314,23 @@ func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) scrapeHandler(w http.ResponseWriter, r *http.Request) {
-	gwinnettData := scraper.GwinnettScraper{
+	gwinnettData := scraper.CountyScraper{
+		Name:    "Gwinnett",
 		Webpage: "https://www.gwinnetttaxcommissioner.com/property-tax/delinquent_tax/tax-liens-tax-sales",
 		Domain:  "www.gwinnetttaxcommissioner.com",
 	}
-
 	err := gwinnettData.Scrape()
 	if err != nil {
 		fmt.Fprintf(w, "Error: %v\n", err)
 	} else {
 		fmt.Fprintf(w, "Scraping completed")
 	}
+
+	/*
+		pauldingData := scraper.CountyScraper{
+			Name:    "Paulding",
+			Webpage: "",
+			Domain:  "",
+		}
+	*/
 }
