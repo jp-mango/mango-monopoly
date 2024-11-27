@@ -1,3 +1,4 @@
+import glob
 import sys
 from datetime import datetime
 import tabula
@@ -21,6 +22,12 @@ def pdfConvert(link: str, county: str):
     directory = f"./scraper/{county}"
     if not os.path.exists(directory):
         os.makedirs(directory)
+
+    files = glob.glob(os.path.join(directory, "*"))  # Match files inside the directory
+
+    for f in files:
+        if os.path.isfile(f):  # Check if it's a file
+            os.remove(f)
 
     filepath = os.path.join(directory, f"{county}UpcomingSales{timestamp}.csv")
     tabula.convert_into(link, filepath, output_format="csv", pages="all")
