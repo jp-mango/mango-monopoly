@@ -122,45 +122,53 @@ func (app *application) propertyCreatePost(w http.ResponseWriter, r *http.Reques
 	form.CheckField(validator.NotBlank(prop.PropertyType.String), "property_type", "Cannot be left blank")
 
 	// Numeric fields
-	valid, errMsg := validator.ValidateInt(r.PostForm.Get("land_value"), 64)
-	if !valid {
-		form.AddFieldError("land_value", errMsg)
+	landValue, err := strconv.ParseInt(r.PostForm.Get("land_value"), 10, 64)
+	if err != nil {
+		form.AddFieldError("land_value", "Enter an integer")
 	}
+	prop.LandValue = sql.NullInt64{Int64: landValue, Valid: err == nil}
 
-	valid, errMsg = validator.ValidateInt(r.PostForm.Get("building_value"), 64)
-	if !valid {
-		form.AddFieldError("building_value", errMsg)
+	buildingValue, err := strconv.ParseInt(r.PostForm.Get("building_value"), 10, 64)
+	if err != nil {
+		form.AddFieldError("building_value", "Enter an integer")
 	}
+	prop.LandValue = sql.NullInt64{Int64: buildingValue, Valid: err == nil}
 
-	valid, errMsg = validator.ValidateInt(r.PostForm.Get("fair_market_value"), 64)
-	if !valid {
-		form.AddFieldError("fair_market_value", errMsg)
+	fairMarketValue, err := strconv.ParseInt(r.PostForm.Get("fair_market_value"), 10, 64)
+	if err != nil {
+		form.AddFieldError("fair_market_value", "Enter an integer")
 	}
+	prop.FairMarketValue = sql.NullInt64{Int64: fairMarketValue, Valid: err == nil}
 
-	valid, errMsg = validator.ValidateFloat(r.PostForm.Get("lot_size"), 64)
-	if !valid {
-		form.AddFieldError("lot_size", errMsg)
+	lotSize, err := strconv.ParseFloat(r.PostForm.Get("lot_size"), 64)
+	if err != nil {
+		form.AddFieldError("lot_size", "Enter a number")
 	}
+	prop.LotSize = sql.NullFloat64{Float64: lotSize, Valid: err == nil}
 
-	valid, errMsg = validator.ValidateInt(r.PostForm.Get("square_footage"), 64)
-	if !valid {
-		form.AddFieldError("square_footage", errMsg)
+	squareFootage, err := strconv.ParseInt(r.PostForm.Get("square_footage"), 10, 64)
+	if err != nil {
+		form.AddFieldError("square_footage", "Enter a number")
 	}
+	prop.SquareFt = sql.NullInt64{Int64: squareFootage, Valid: err == nil}
 
-	valid, errMsg = validator.ValidateInt(r.PostForm.Get("bedrooms"), 64)
-	if !valid {
-		form.AddFieldError("bedrooms", errMsg)
+	bedrooms, err := strconv.ParseInt(r.PostForm.Get("bedrooms"), 10, 16)
+	if err != nil {
+		form.AddFieldError("bedrooms", "Enter a number")
 	}
+	prop.Bedrooms = sql.NullInt16{Int16: int16(bedrooms), Valid: err == nil}
 
-	valid, errMsg = validator.ValidateFloat(r.PostForm.Get("bathrooms"), 64)
-	if !valid {
-		form.AddFieldError("bathrooms", errMsg)
+	bathrooms, err := strconv.ParseFloat(r.PostForm.Get("bathrooms"), 64)
+	if err != nil {
+		form.AddFieldError("bathrooms", "Enter a number")
 	}
+	prop.Bathrooms = sql.NullFloat64{Float64: float64(bathrooms), Valid: err == nil}
 
-	valid, errMsg = validator.ValidateFloat(r.PostForm.Get("year_built"), 64)
-	if !valid {
-		form.AddFieldError("year_built", errMsg)
+	yearBuilt, err := strconv.ParseInt(r.PostForm.Get("year_built"), 10, 64)
+	if err != nil {
+		form.AddFieldError("year_built", "Enter a number")
 	}
+	prop.YearBuilt = sql.NullInt16{Int16: int16(yearBuilt), Valid: err == nil}
 
 	// URLs
 	prop.TaxURL = sql.NullString{String: r.PostForm.Get("tax_assessor_url"), Valid: true}
