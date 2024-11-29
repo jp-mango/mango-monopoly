@@ -9,8 +9,6 @@ def main():
     if len(sys.argv) < 3:
         print("Usage: python main.py <link> <county>")
         sys.exit(1)
-    # for debugging uv error on staging
-    print("PATH:", os.environ["PATH"])
 
     link = sys.argv[1]
     county = sys.argv[2]
@@ -20,7 +18,6 @@ def main():
 
 def pdfConvert(link: str, county: str):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
     directory = f"./scraper/{county}"
     if not os.path.exists(directory):
         os.makedirs(directory)

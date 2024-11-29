@@ -37,6 +37,7 @@ func (gco *CountyScraper) Scrape() error {
 				link = fmt.Sprintf("https://%s", strings.TrimPrefix(gco.Domain+rawLink, "www."))
 				fmt.Println("Found link:", link)
 
+				//TODO: fix this so it works in dev and staging env
 				scriptPath, err := filepath.Abs("./scraper/main.py")
 				if err != nil {
 					fmt.Printf("Error getting absolute path: %v\n", err)
