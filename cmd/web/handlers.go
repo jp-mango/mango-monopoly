@@ -333,7 +333,6 @@ func (app *application) scrapeHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Fprintf(w, "Scraping completed")
 	}
-
 	/*
 		pauldingData := scraper.CountyScraper{
 			Name:    "Paulding",
