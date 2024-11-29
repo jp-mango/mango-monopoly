@@ -9,6 +9,8 @@ def main():
     if len(sys.argv) < 3:
         print("Usage: python main.py <link> <county>")
         sys.exit(1)
+    # for debugging uv error on staging
+    print("PATH:", os.environ["PATH"])
 
     link = sys.argv[1]
     county = sys.argv[2]
