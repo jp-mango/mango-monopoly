@@ -10,6 +10,7 @@ localBinaryPath="./bin/$binaryName" # Path to the built binary on local machine
 localStaticPath="./ui/static/"      # Path to the static folder on local machine
 localEnvFile="./.env"               # Path to the .env file on local machine
 localTLS="./tls/"
+localScrape="./scraper/"
 stagingServer="staging-server"            # Staging server IP/hostname
 remoteDir="/home/mangobyte-site"          # Directory on the staging server
 remoteBinaryPath="$remoteDir/$binaryName" # Full path of the binary on the staging server
@@ -70,7 +71,16 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-# Step 7: Make the binary executable on the staging server
+# Step 7: transfer scraper folder and its content to staging server
+echo "Transferring scraped content and scripts to staging"
+scp -r "$localScrape" "${stagingServer}:${remoteDir}"
+
+if [ $? -ne 0 ]; then
+	echo "Failed to transfer scraper directory! Aborting deployment."
+	exit 1
+fi
+
+# Step 8: Make the binary executable on the staging server
 echo "Making the binary executable..."
 ssh "$stagingServer" "chmod +x $remoteBinaryPath"
 
@@ -79,7 +89,7 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-# Step 8: Restart the service after deployment
+# Step 9: Restart the service after deployment
 echo "Restarting the mangobyte-site service on the staging server..."
 ssh "$stagingServer" "sudo systemctl restart mangobyte-site"
 
