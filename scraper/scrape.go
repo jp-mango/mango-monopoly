@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -21,6 +22,10 @@ type CountyScraper struct {
 }
 
 func (county *CountyScraper) Scrape() error {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: true,
+	}))
+
 	if county.Name == "Gwinnett" {
 		c := colly.NewCollector(
 			colly.AllowedDomains(county.Domain),
@@ -28,7 +33,6 @@ func (county *CountyScraper) Scrape() error {
 
 		var foundLink bool
 		var link string
-		var pythonError error
 
 		c.OnHTML("a[href]", func(e *colly.HTMLElement) {
 			if e.Text == "List of Properties" {
@@ -39,7 +43,7 @@ func (county *CountyScraper) Scrape() error {
 
 				scriptPath, err := filepath.Abs("./scraper/main.py")
 				if err != nil {
-					pythonError = fmt.Errorf("error getting absolute path: %w", err)
+					logger.Error("error getting absolute path", "err", err)
 					return
 				}
 				//fmt.Println("Script path:", scriptPath)
@@ -52,8 +56,7 @@ func (county *CountyScraper) Scrape() error {
 				// Capture the combined output of the command
 				_, err = pythonCMD.CombinedOutput()
 				if err != nil {
-					//fmt.Printf("Python script error: %v\nOutput: %s\n", err, string(output))
-					pythonError = fmt.Errorf("error running Python script: %w", err)
+					logger.Error("error running python script", "err", err)
 					return
 				}
 
@@ -63,27 +66,25 @@ func (county *CountyScraper) Scrape() error {
 
 		// Debugging for requests
 		c.OnRequest(func(r *colly.Request) {
-			fmt.Println("Visiting", r.URL.String())
+			logger.Info(fmt.Sprint("Visiting: ", r.URL.String()))
 		})
 
 		// Start scraping
 		err := c.Visit(county.Webpage)
 		if err != nil {
-			return fmt.Errorf("error visiting webpage: %w", err)
+			logger.Error("error visiting webpage:", "err", err)
+			return err
 		}
 
 		// Check if the link was found
 		if !foundLink {
-			return fmt.Errorf("unable to find upcoming property list")
-		}
-
-		// Check if there was a Python script error
-		if pythonError != nil {
-			return pythonError
+			logger.Error("unable to find upcoming property list", "err", err)
+			return err
 		}
 
 		return nil
 	}
 
+	logger.Error(fmt.Sprintf("unable to find county: '%s'", county.Name))
 	return fmt.Errorf("unable to find county: %s", county.Name)
 }
