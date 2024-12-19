@@ -20,10 +20,10 @@ type CountyScraper struct {
 	Domain  string
 }
 
-func (gco *CountyScraper) Scrape() error {
-	if gco.Name == "Gwinnett" {
+func (county *CountyScraper) Scrape() error {
+	if county.Name == "Gwinnett" {
 		c := colly.NewCollector(
-			colly.AllowedDomains(gco.Domain),
+			colly.AllowedDomains(county.Domain),
 		)
 
 		var foundLink bool
@@ -34,32 +34,30 @@ func (gco *CountyScraper) Scrape() error {
 			if e.Text == "List of Properties" {
 				foundLink = true
 				rawLink := e.Attr("href")
-				link = fmt.Sprintf("https://%s", strings.TrimPrefix(gco.Domain+rawLink, "www."))
-				fmt.Println("Found link:", link)
+				link = fmt.Sprintf("https://%s", strings.TrimPrefix(county.Domain+rawLink, "www."))
+				//fmt.Println("Found link:", link)
 
-				//TODO: fix this so it works in dev and staging env
 				scriptPath, err := filepath.Abs("./scraper/main.py")
 				if err != nil {
 					pythonError = fmt.Errorf("error getting absolute path: %w", err)
 					return
 				}
+				//fmt.Println("Script path:", scriptPath)
 
-				fmt.Println("Script path:", scriptPath)
-
-				pythonCMD := exec.Command("uv", "run", scriptPath, link, gco.Name)
+				pythonCMD := exec.Command("uv", "run", scriptPath, link, county.Name)
 
 				// Ensure the environment PATH is passed
 				pythonCMD.Env = append(os.Environ(), "PATH="+os.Getenv("PATH"))
 
 				// Capture the combined output of the command
-				output, err := pythonCMD.CombinedOutput()
+				_, err = pythonCMD.CombinedOutput()
 				if err != nil {
-					fmt.Printf("Python script error: %v\nOutput: %s\n", err, string(output))
+					//fmt.Printf("Python script error: %v\nOutput: %s\n", err, string(output))
 					pythonError = fmt.Errorf("error running Python script: %w", err)
 					return
 				}
 
-				fmt.Println("Python script output:", string(output))
+				//fmt.Println("Python script output:", string(output))
 			}
 		})
 
@@ -69,7 +67,7 @@ func (gco *CountyScraper) Scrape() error {
 		})
 
 		// Start scraping
-		err := c.Visit(gco.Webpage)
+		err := c.Visit(county.Webpage)
 		if err != nil {
 			return fmt.Errorf("error visiting webpage: %w", err)
 		}
@@ -87,5 +85,5 @@ func (gco *CountyScraper) Scrape() error {
 		return nil
 	}
 
-	return fmt.Errorf("unable to find county: %s", gco.Name)
+	return fmt.Errorf("unable to find county: %s", county.Name)
 }
