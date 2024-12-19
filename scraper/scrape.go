@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log/slog"
 	"os"
@@ -10,6 +11,14 @@ import (
 
 	"github.com/gocolly/colly"
 )
+
+var Logger *slog.Logger
+
+func init() {
+	Logger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: true,
+	}))
+}
 
 type Scraper interface {
 	Scrape() error
@@ -22,9 +31,6 @@ type CountyScraper struct {
 }
 
 func (county *CountyScraper) Scrape() error {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource: true,
-	}))
 
 	if county.Name == "Gwinnett" {
 		c := colly.NewCollector(
@@ -43,7 +49,7 @@ func (county *CountyScraper) Scrape() error {
 
 				scriptPath, err := filepath.Abs("./scraper/main.py")
 				if err != nil {
-					logger.Error("error getting absolute path", "err", err)
+					Logger.Error("error getting absolute path", "err", err)
 					return
 				}
 				//fmt.Println("Script path:", scriptPath)
@@ -56,7 +62,7 @@ func (county *CountyScraper) Scrape() error {
 				// Capture the combined output of the command
 				_, err = pythonCMD.CombinedOutput()
 				if err != nil {
-					logger.Error("error running python script", "err", err)
+					Logger.Error("error running python script", "err", err)
 					return
 				}
 
@@ -66,25 +72,72 @@ func (county *CountyScraper) Scrape() error {
 
 		// Debugging for requests
 		c.OnRequest(func(r *colly.Request) {
-			logger.Info(fmt.Sprint("Visiting: ", r.URL.String()))
+			Logger.Info(fmt.Sprint("Visiting: ", r.URL.String()))
 		})
 
 		// Start scraping
 		err := c.Visit(county.Webpage)
 		if err != nil {
-			logger.Error("error visiting webpage:", "err", err)
+			Logger.Error("error visiting webpage:", "err", err)
 			return err
 		}
 
 		// Check if the link was found
 		if !foundLink {
-			logger.Error("unable to find upcoming property list", "err", err)
+			Logger.Error("unable to find upcoming property list", "err", err)
 			return err
 		}
 
 		return nil
 	}
 
-	logger.Error(fmt.Sprintf("unable to find county: '%s'", county.Name))
+	Logger.Error(fmt.Sprintf("unable to find county: '%s'", county.Name))
 	return fmt.Errorf("unable to find county: %s", county.Name)
+}
+
+func ProcessCSV(path string) ([]string, error) {
+	files, err := os.ReadDir(path)
+	if err != nil {
+		Logger.Error("unable to read directory", "err", err)
+		return nil, err
+	}
+
+	if len(files) == 0 {
+		Logger.Error("No files found in directory", "err", fmt.Sprintf("directory: %s", files))
+		return nil, fmt.Errorf("no files found in directory: %s", path)
+	}
+
+	file := files[0]
+
+	fileInfo, err := file.Info()
+	if err != nil {
+		Logger.Error("unable to retrieve file info", "err", err)
+		return nil, err
+	}
+
+	filePath := filepath.Join(path, fileInfo.Name())
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		Logger.Error("unable to open file", "err", err)
+		return nil, err
+	}
+	defer f.Close()
+
+	reader := csv.NewReader(f)
+	records, err := reader.ReadAll()
+	if err != nil {
+		Logger.Error("unable to read csv", "err", err)
+		return nil, err
+	}
+
+	var parcelIDs []string
+	for index, r := range records {
+		if index == 0 {
+			continue
+		}
+		parcelIDs = append(parcelIDs, r[0])
+	}
+
+	return parcelIDs, nil
 }
