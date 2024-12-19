@@ -21,13 +21,13 @@ func (app *application) routes() http.Handler {
 	mux.Handle("POST /user/signup", dynamic.ThenFunc(app.userSignupPost))
 	mux.Handle("GET /user/login", dynamic.ThenFunc(app.userLogin))
 	mux.Handle("POST /user/login", dynamic.ThenFunc(app.userLoginPost))
-	mux.Handle("GET /scrape", dynamic.ThenFunc(app.scrapeHandler))
 
 	protected := dynamic.Append(app.requireAuthentication)
 
 	mux.Handle("GET /property/create", protected.ThenFunc(app.createPropertyPage))
 	mux.Handle("POST /property/create", protected.ThenFunc(app.propertyCreatePost))
 	mux.Handle("POST /user/logout", protected.ThenFunc(app.userLogoutPost))
+	mux.Handle("GET /scrape", protected.ThenFunc(app.scrapeHandler))
 
 	standard := chain.New(app.recoverPanic, app.logRequest, commonHeaders)
 
