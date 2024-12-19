@@ -11,6 +11,7 @@ localStaticPath="./ui/static/"      # Path to the static folder on local machine
 localEnvFile="./.env"               # Path to the .env file on local machine
 localTLS="./tls/"
 localScrape="./scraper/"
+localUvLock="./uv.lock"                   # Path to the uv lock file
 stagingServer="staging-server"            # Staging server IP/hostname
 remoteDir="/home/mangobyte-site"          # Directory on the staging server
 remoteBinaryPath="$remoteDir/$binaryName" # Full path of the binary on the staging server
@@ -71,16 +72,46 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-# Step 7: transfer scraper folder and its content to staging server
-echo "Transferring scraped content and scripts to staging"
+# Step 7: Transfer scraper folder and `uv.lock` file to staging server
+echo "Transferring scraper content and uv.lock file to staging server..."
 scp -r "$localScrape" "${stagingServer}:${remoteDir}"
+scp "$localUvLock" "${stagingServer}:${remoteDir}/uv.lock"
 
 if [ $? -ne 0 ]; then
-	echo "Failed to transfer scraper directory! Aborting deployment."
+	echo "Failed to transfer scraper directory or uv.lock! Aborting deployment."
 	exit 1
 fi
 
-# Step 8: Make the binary executable on the staging server
+# Step 8: Install `uv` and dependencies using `requirements.txt`
+echo "Setting up Python environment and installing dependencies using 'uv' on the staging server..."
+ssh "$stagingServer" <<EOF
+sudo apt-get update
+sudo apt-get install -y python3-pip python3-dev python3-venv
+
+# Ensure $(uv) is installed
+if ! command -v uv &> /dev/null; then
+    echo "Installing 'uv'..."
+    pip3 install --user uv
+fi
+
+cd $remoteDir
+
+# Create a virtual environment if it doesn't exist
+if [ ! -d ".venv" ]; then
+    echo "Creating a virtual environment..."
+    uv venv .venv
+fi
+
+# Activate the virtual environment and install dependencies
+uv pip install -r requirements.txt
+EOF
+
+if [ $? -ne 0 ]; then
+	echo "Failed to set up Python environment or install dependencies using 'uv'!"
+	exit 1
+fi
+
+# Step 9: Make the binary executable on the staging server
 echo "Making the binary executable..."
 ssh "$stagingServer" "chmod +x $remoteBinaryPath"
 
@@ -89,7 +120,7 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-# Step 9: Restart the service after deployment
+# Step 10: Restart the service after deployment
 echo "Restarting the mangobyte-site service on the staging server..."
 ssh "$stagingServer" "sudo systemctl restart mangobyte-site"
 
