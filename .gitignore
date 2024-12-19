@@ -1,0 +1,7 @@
+.vscode
+.venv
+.env
+tailwindcss
+/tmp
+/myenv
+/tls

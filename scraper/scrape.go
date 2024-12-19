@@ -40,14 +40,13 @@ func (gco *CountyScraper) Scrape() error {
 				//TODO: fix this so it works in dev and staging env
 				scriptPath, err := filepath.Abs("./scraper/main.py")
 				if err != nil {
-					fmt.Printf("Error getting absolute path: %v\n", err)
 					pythonError = fmt.Errorf("error getting absolute path: %w", err)
 					return
 				}
 
 				fmt.Println("Script path:", scriptPath)
 
-				pythonCMD := exec.Command("uv", "run", scriptPath, link, "Gwinnett")
+				pythonCMD := exec.Command("uv", "run", scriptPath, link, gco.Name)
 
 				// Ensure the environment PATH is passed
 				pythonCMD.Env = append(os.Environ(), "PATH="+os.Getenv("PATH"))
@@ -86,8 +85,7 @@ func (gco *CountyScraper) Scrape() error {
 		}
 
 		return nil
-
-	} else {
-		return fmt.Errorf("unable to find county: %s", gco.Name)
 	}
+
+	return fmt.Errorf("unable to find county: %s", gco.Name)
 }
