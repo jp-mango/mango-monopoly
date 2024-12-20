@@ -68,7 +68,7 @@ type propertyCreateForm struct {
 	ParcelID            string `form:"parcel_id"`
 	PropertyType        string `form:"property_type"`
 	LandValue           string `form:"land_value"`
-	BuildingValue       string `form:"building_value"`
+	ImprovementValue    string `form:"improvement_value"`
 	AppraisalValue      string `form:"appraisal_value"`
 	LotSize             string `form:"lot_size"`
 	SquareFootage       string `form:"square_footage"`
@@ -128,11 +128,11 @@ func (app *application) propertyCreatePost(w http.ResponseWriter, r *http.Reques
 	}
 	prop.LandValue = sql.NullInt64{Int64: landValue, Valid: err == nil}
 
-	buildingValue, err := strconv.ParseInt(r.PostForm.Get("building_value"), 10, 64)
+	improvementValue, err := strconv.ParseInt(r.PostForm.Get("improvement_value"), 10, 64)
 	if err != nil {
-		form.AddFieldError("building_value", "Enter an integer")
+		form.AddFieldError("improvement_value", "Enter an integer")
 	}
-	prop.LandValue = sql.NullInt64{Int64: buildingValue, Valid: err == nil}
+	prop.LandValue = sql.NullInt64{Int64: improvementValue, Valid: err == nil}
 
 	fairMarketValue, err := strconv.ParseInt(r.PostForm.Get("appraisal_value"), 10, 64)
 	if err != nil {

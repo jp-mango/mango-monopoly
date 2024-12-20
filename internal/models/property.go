@@ -42,7 +42,7 @@ type PropertyModel struct {
 func (m *PropertyModel) Insert(property *Property) (int64, error) {
 
 	query := `
-		INSERT INTO properties (situs, city, "state", "zip_code",county_id,parcel_id,property_type,land_value, building_value, appraisal_value,lot_size, square_footage,bedrooms,bathrooms, year_built, tax_assessor_url,zillow_url)
+		INSERT INTO properties (situs, city, "state", "zip_code",county_id,parcel_id,property_type,land_value, improvement_value, appraisal_value,lot_size, square_footage,bedrooms,bathrooms, year_built, tax_assessor_url,zillow_url)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING property_id`
 
 	args := []any{property.Address, property.City, property.State, property.Zip, property.County, property.ParcelID, property.PropertyType, property.LandValue, property.ImprovementValue, property.AppraisalValue, property.LotSize, property.SquareFt, property.Bedrooms, property.Bathrooms, property.YearBuilt, property.TaxURL, property.ZillowURL}
@@ -73,7 +73,7 @@ func (m *PropertyModel) Get(id int64) (*Property, error) {
 		parcel_id,
 		property_type,
 		land_value,
-		building_value,
+		improvement_value,
 		appraisal_value,
 		lot_size
 		FROM properties
@@ -132,7 +132,7 @@ func (m *PropertyModel) Latest() ([]Property, error) {
 		parcel_id,
 		property_type,
 		land_value,
-		building_value,
+		improvement_value,
 		appraisal_value,
 		lot_size
 		FROM properties
