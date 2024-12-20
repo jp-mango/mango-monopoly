@@ -21,10 +21,6 @@ func init() {
 	}))
 }
 
-type Scraper interface {
-	Scrape() error
-}
-
 type CountyScraper struct {
 	Name    string
 	Webpage string
