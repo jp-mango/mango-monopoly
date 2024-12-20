@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/gocolly/colly"
@@ -30,9 +31,9 @@ type CountyScraper struct {
 	Domain  string
 }
 
-func (county *CountyScraper) Scrape() error {
-
-	if county.Name == "Gwinnett" {
+func (county *CountyScraper) ScrapeAuctionData() error {
+	switch county.Name {
+	case "Gwinnett":
 		c := colly.NewCollector(
 			colly.AllowedDomains(county.Domain),
 		)
@@ -72,7 +73,15 @@ func (county *CountyScraper) Scrape() error {
 
 		// Debugging for requests
 		c.OnRequest(func(r *colly.Request) {
-			Logger.Info(fmt.Sprint("Visiting: ", r.URL.String()))
+			Logger.Info(fmt.Sprintf("Visiting: %s", r.URL.String()))
+		})
+
+		c.OnResponse(func(r *colly.Response) {
+			Logger.Info(fmt.Sprintf("Status: %d", r.StatusCode))
+		})
+
+		c.OnError(func(r *colly.Response, err error) {
+			Logger.Error(fmt.Sprintf("request URL: %s failed with response: %v", r.Request.URL, r), "err", err)
 		})
 
 		// Start scraping
@@ -89,10 +98,10 @@ func (county *CountyScraper) Scrape() error {
 		}
 
 		return nil
+	default:
+		Logger.Error(fmt.Sprintf("unable to find county: '%s'", county.Name))
+		return fmt.Errorf("unable to find county: %s", county.Name)
 	}
-
-	Logger.Error(fmt.Sprintf("unable to find county: '%s'", county.Name))
-	return fmt.Errorf("unable to find county: %s", county.Name)
 }
 
 func ProcessCSV(path string) ([]string, error) {
@@ -140,4 +149,82 @@ func ProcessCSV(path string) ([]string, error) {
 	}
 
 	return parcelIDs, nil
+}
+
+type ParcelData struct {
+	PropertyID    string
+	AlternateID   string
+	Address       string
+	PropertyClass string
+	Neighborhood  int32
+	DeedAcres     float32
+}
+
+func ScrapeParcelData(parcelIDs []string) error {
+	c := colly.NewCollector(
+		colly.AllowedDomains("gwinnettassessor.manatron.com"),
+	)
+
+	for i := 0; i < len(parcelIDs); i++ {
+		parcelIDs[i] = strings.Replace(parcelIDs[i], " ", "%20", -1)
+
+		url := fmt.Sprintf("https://gwinnettassessor.manatron.com/IWantTo/PropertyGISSearch/PropertyDetail.aspx?p=%s", parcelIDs[i])
+
+		// Set up a slice to hold the scraped data
+		var parcelData ParcelData
+
+		// Scrape the content of the relevant `div`
+		c.OnHTML("div#dnn_ctr1385_ContentPane", func(e *colly.HTMLElement) {
+			// Extract table rows within the div
+			e.ForEach("table tr", func(_ int, row *colly.HTMLElement) {
+				header := strings.TrimSpace(row.ChildText("th"))
+				value := strings.TrimSpace(row.ChildText("td"))
+
+				switch header {
+				case "Property ID":
+					parcelData.PropertyID = strings.TrimSpace(value)
+				case "Alternate ID":
+					parcelData.AlternateID = strings.TrimSpace(value)
+				case "Address":
+					parcelData.Address = strings.TrimSpace(value)
+				case "Property Class":
+					parcelData.PropertyClass = strings.TrimSpace(value)
+				case "Neighborhood":
+					n, err := strconv.Atoi(strings.TrimSpace(value))
+					if err != nil {
+						Logger.Error("unable to convert to int", "err", err)
+					}
+					parcelData.Neighborhood = int32(n)
+				case "Deed Acres":
+					da, err := strconv.ParseFloat(strings.TrimSpace(value), 32)
+					if err != nil {
+						Logger.Error("unable to convert to float", "err", err)
+					}
+					parcelData.DeedAcres = float32(da)
+				}
+			})
+		})
+		//TODO: scrape remainign data from page and load into DB
+
+		c.OnResponse(func(r *colly.Response) {
+			if r.StatusCode != 200 {
+				fmt.Printf("Status: %d\n", r.StatusCode)
+			}
+		})
+
+		c.OnError(func(r *colly.Response, err error) {
+			fmt.Printf("Request URL: %s failed with response: %v\nError: %v\n", r.Request.URL, r, err)
+		})
+
+		err := c.Visit(url)
+		if err != nil {
+			fmt.Printf("Error visiting webpage: %v\n", err)
+			return err
+		}
+
+		// Print the scraped data
+		fmt.Printf("\nScraped Parcel Data: %+v\n", parcelData)
+	}
+
+	return nil
 }
