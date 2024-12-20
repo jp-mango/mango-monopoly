@@ -6,3 +6,5 @@ tailwindcss
 /tls
 promtail-config.yml
 docker-monitor.yml
+tailwind
+.gitignore

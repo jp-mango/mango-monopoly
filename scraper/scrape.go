@@ -57,10 +57,11 @@ func (county *CountyScraper) ScrapeAuctionData() error {
 				pythonCMD.Env = append(os.Environ(), "PATH="+os.Getenv("PATH"))
 
 				// Capture the combined output of the command
-				_, err = pythonCMD.CombinedOutput()
+				output, err := pythonCMD.CombinedOutput()
 				if err != nil {
-					Logger.Error("error running python script", "err", err)
-					return
+					Logger.Error("Python script failed", "output", string(output), "err", err)
+				} else {
+					Logger.Info("Python script succeeded", "output", string(output))
 				}
 
 				//fmt.Println("Python script output:", string(output))
