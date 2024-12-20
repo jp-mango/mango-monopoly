@@ -327,11 +327,21 @@ func (app *application) scrapeHandler(w http.ResponseWriter, r *http.Request) {
 		Webpage: "https://www.gwinnetttaxcommissioner.com/property-tax/delinquent_tax/tax-liens-tax-sales",
 		Domain:  "www.gwinnetttaxcommissioner.com",
 	}
-	err := gwinnettData.Scrape()
+	err := gwinnettData.ScrapeAuctionData()
 	if err != nil {
 		fmt.Fprintf(w, "Error: %v\n", err)
 	} else {
-		fmt.Fprintf(w, "Scraping completed")
+		fmt.Fprintf(w, "Scraping completed\n")
+	}
+
+	parcelIDs, err := scraper.ProcessCSV("./scraper/Gwinnett")
+	if err != nil {
+		app.serverError(w, r, fmt.Errorf("error: %w", err))
+	}
+
+	err = scraper.ScrapeParcelData(parcelIDs)
+	if err != nil {
+		app.serverError(w, r, err)
 	}
 	/*
 		pauldingData := scraper.CountyScraper{
