@@ -111,14 +111,14 @@
 			</div>
 		</div>
 
-		<!-- Building Value -->
+		<!-- Improvement Value -->
 		<div class="col-span-1">
-			<label for="building_value" class="block text-sm font-medium text-gray-900">Building Value</label>
+			<label for="improvement_value" class="block text-sm font-medium text-gray-900">Improvement Value</label>
 			<div class="mt-2">
-				{{with .Form.FieldErrors.building_value}}
+				{{with .Form.FieldErrors.improvement_value}}
 				<label class="error text-red-600">{{.}}</label>
 				{{end}}
-				<input type="number" name="building_value" id="building_value" value="{{.Form.BuildingValue}}"
+				<input type="number" name="improvement_value" id="improvement_value" value="{{.Form.ImprovementValue}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
