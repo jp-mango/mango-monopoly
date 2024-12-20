@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
+	"strings"
 
 	"github.com/justinas/nosurf"
 )
@@ -30,16 +32,37 @@ func commonHeaders(next http.Handler) http.Handler {
 	})
 }
 
+func getClientIP(r *http.Request) string {
+	// If behind a reverse proxy, look for X-Forwarded-For
+	forwardedFor := r.Header.Get("X-Forwarded-For")
+	if forwardedFor != "" {
+		// Often contains multiple IPs if there are multiple proxies
+		// The first is the client’s real IP
+		ips := strings.Split(forwardedFor, ",")
+		return strings.TrimSpace(ips[0])
+	}
+
+	// If set, X-Real-IP can be used as a fallback
+	realIP := r.Header.Get("X-Real-IP")
+	if realIP != "" {
+		return realIP
+	}
+
+	// Otherwise, fallback to RemoteAddr (may not be original client IP)
+	host, _, _ := net.SplitHostPort(r.RemoteAddr)
+	return host
+}
+
 func (app *application) logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
-			ip     = r.RemoteAddr
+			ip     = getClientIP(r)
 			proto  = r.Proto
 			method = r.Method
 			uri    = r.URL.RequestURI()
 		)
 
-		app.logger.Info("received request", "ip", ip, "proto", proto, "method", method, "uri", uri)
+		app.logger.Info("received request", "requestor ip", ip, "proto", proto, "method", method, "uri", uri)
 		next.ServeHTTP(w, r)
 	})
 }
