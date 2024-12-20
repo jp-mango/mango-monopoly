@@ -68,8 +68,8 @@ type propertyCreateForm struct {
 	ParcelID            string `form:"parcel_id"`
 	PropertyType        string `form:"property_type"`
 	LandValue           string `form:"land_value"`
-	BuildingValue       string `form:"building_value"`
-	FairMarketValue     string `form:"fair_market_value"`
+	ImprovementValue    string `form:"improvement_value"`
+	AppraisalValue      string `form:"appraisal_value"`
 	LotSize             string `form:"lot_size"`
 	SquareFootage       string `form:"square_footage"`
 	Bedrooms            string `form:"bedrooms"`
@@ -128,17 +128,17 @@ func (app *application) propertyCreatePost(w http.ResponseWriter, r *http.Reques
 	}
 	prop.LandValue = sql.NullInt64{Int64: landValue, Valid: err == nil}
 
-	buildingValue, err := strconv.ParseInt(r.PostForm.Get("building_value"), 10, 64)
+	improvementValue, err := strconv.ParseInt(r.PostForm.Get("improvement_value"), 10, 64)
 	if err != nil {
-		form.AddFieldError("building_value", "Enter an integer")
+		form.AddFieldError("improvement_value", "Enter an integer")
 	}
-	prop.LandValue = sql.NullInt64{Int64: buildingValue, Valid: err == nil}
+	prop.LandValue = sql.NullInt64{Int64: improvementValue, Valid: err == nil}
 
-	fairMarketValue, err := strconv.ParseInt(r.PostForm.Get("fair_market_value"), 10, 64)
+	fairMarketValue, err := strconv.ParseInt(r.PostForm.Get("appraisal_value"), 10, 64)
 	if err != nil {
-		form.AddFieldError("fair_market_value", "Enter an integer")
+		form.AddFieldError("appraisal_value", "Enter an integer")
 	}
-	prop.FairMarketValue = sql.NullInt64{Int64: fairMarketValue, Valid: err == nil}
+	prop.AppraisalValue = sql.NullInt64{Int64: fairMarketValue, Valid: err == nil}
 
 	lotSize, err := strconv.ParseFloat(r.PostForm.Get("lot_size"), 64)
 	if err != nil {
@@ -339,7 +339,7 @@ func (app *application) scrapeHandler(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, fmt.Errorf("error: %w", err))
 	}
 
-	err = scraper.ScrapeParcelData(parcelIDs)
+	err = scraper.ScrapeGwinnettParcelData(parcelIDs)
 	if err != nil {
 		app.serverError(w, r, err)
 	}

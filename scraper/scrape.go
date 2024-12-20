@@ -1,9 +1,12 @@
 package scraper
 
 import (
+	"database/sql"
 	"encoding/csv"
 	"fmt"
 	"log/slog"
+	"mango-monopoly/internal/models"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -157,18 +160,21 @@ type ParcelData struct {
 	DeedAcres     float32
 }
 
-func ScrapeParcelData(parcelIDs []string) error {
+func ScrapeGwinnettParcelData(parcelIDs []string) error {
 	c := colly.NewCollector(
 		colly.AllowedDomains("gwinnettassessor.manatron.com"),
 	)
 
 	for i := 0; i < len(parcelIDs); i++ {
+		var prop models.Property
+
 		parcelIDs[i] = strings.Replace(parcelIDs[i], " ", "%20", -1)
 
 		url := fmt.Sprintf("https://gwinnettassessor.manatron.com/IWantTo/PropertyGISSearch/PropertyDetail.aspx?p=%s", parcelIDs[i])
+		prop.TaxURL = sql.NullString{String: url, Valid: true}
 
-		// Set up a slice to hold the scraped data
-		var parcelData ParcelData
+		state := "Georgia"
+		prop.State = sql.NullString{String: state, Valid: true}
 
 		// Scrape the content of the relevant `div`
 		c.OnHTML("div#dnn_ctr1385_ContentPane", func(e *colly.HTMLElement) {
@@ -179,29 +185,123 @@ func ScrapeParcelData(parcelIDs []string) error {
 
 				switch header {
 				case "Property ID":
-					parcelData.PropertyID = strings.TrimSpace(value)
-				case "Alternate ID":
-					parcelData.AlternateID = strings.TrimSpace(value)
+					prop.ParcelID = sql.NullString{String: value, Valid: true}
 				case "Address":
-					parcelData.Address = strings.TrimSpace(value)
+					prop.Address = sql.NullString{String: value, Valid: true}
 				case "Property Class":
-					parcelData.PropertyClass = strings.TrimSpace(value)
-				case "Neighborhood":
-					n, err := strconv.Atoi(strings.TrimSpace(value))
-					if err != nil {
-						Logger.Error("unable to convert to int", "err", err)
-					}
-					parcelData.Neighborhood = int32(n)
+					prop.PropertyClass = sql.NullString{String: value, Valid: true}
 				case "Deed Acres":
 					da, err := strconv.ParseFloat(strings.TrimSpace(value), 32)
 					if err != nil {
 						Logger.Error("unable to convert to float", "err", err)
 					}
-					parcelData.DeedAcres = float32(da)
+					prop.LotSize = sql.NullFloat64{Float64: math.Round(da*100) / 100, Valid: true}
 				}
 			})
 		})
-		//TODO: scrape remainign data from page and load into DB
+
+		c.OnHTML("div#lxT1388", func(e *colly.HTMLElement) {
+			e.ForEach("table.ui-widget-content.ui-table tr", func(_ int, row *colly.HTMLElement) {
+				header := strings.TrimSpace(row.ChildText("th"))
+				value := strings.TrimSpace(row.ChildText("td"))
+
+				switch header {
+				case "Type":
+					prop.PropertyType = sql.NullString{String: value, Valid: true}
+				case "Grade":
+					prop.Grade = sql.NullString{String: value, Valid: true}
+				case "Year Built":
+					yb, err := strconv.ParseInt(value, 10, 16)
+					if err != nil {
+						Logger.Error("unable to convert to int", "err", err)
+					}
+					prop.YearBuilt = sql.NullInt16{Int16: int16(yb), Valid: true}
+				}
+			})
+		})
+
+		c.OnHTML("table#ValueHistory", func(e *colly.HTMLElement) {
+
+			e.ForEach("tr", func(rowIndex int, row *colly.HTMLElement) {
+				// Handle the first row (header)
+				if rowIndex == 0 {
+					return
+				}
+
+				// Extract data rows (rowIndex > 0)
+				attribute := strings.TrimSpace(row.ChildText("th"))
+				if attribute == "" {
+					return
+				}
+
+				// Only extract values for the most current year (second column)
+				value := strings.TrimSpace(row.ChildText("td:nth-of-type(1)")) // First column after the header
+				switch attribute {
+				case "Land Val":
+					lv, err := strconv.ParseInt(strings.ReplaceAll(strings.ReplaceAll(value, "$", ""), ",", ""), 10, 64)
+					if err != nil {
+						Logger.Error("unable to parse land value", "value", value, "err", err)
+					}
+					prop.LandValue = sql.NullInt64{Int64: lv, Valid: true}
+				case "Imp Val":
+					iv, err := strconv.ParseInt(strings.ReplaceAll(strings.ReplaceAll(value, "$", ""), ",", ""), 10, 64)
+					if err != nil {
+						Logger.Error("unable to parse improvement value", "value", value, "err", err)
+					}
+					prop.ImprovementValue = sql.NullInt64{Int64: iv, Valid: true}
+				case "Total Appr":
+					ta, err := strconv.ParseInt(strings.ReplaceAll(strings.ReplaceAll(value, "$", ""), ",", ""), 10, 64)
+					if err != nil {
+						Logger.Error("unable to parse total appraisal", "value", value, "err", err)
+					}
+					prop.AppraisalValue = sql.NullInt64{Int64: ta, Valid: true}
+				}
+			})
+		})
+
+		//TODO: fix this section, not pulling in required data from website
+		c.OnHTML("div#1388Attributes table#Attribute", func(e *colly.HTMLElement) {
+			e.ForEach("tr", func(rowIndex int, row *colly.HTMLElement) {
+				if rowIndex == 0 {
+					return
+				}
+				// Extract "Attribute" and "Detail" columns
+				attribute := strings.TrimSpace(row.ChildText("td[aria-describedby='Attribute_Attribute']"))
+				detail := strings.TrimSpace(row.ChildText("td[aria-describedby='Attribute_Detail']"))
+
+				// Only process rows with valid data
+				if attribute != "" && detail != "" {
+					switch attribute {
+					case "Roof Structure":
+						prop.RoofStructure = sql.NullString{String: detail, Valid: true}
+					case "Roof Cover":
+						prop.RoofCover = sql.NullString{String: detail, Valid: true}
+					case "Heating":
+						prop.Heating = sql.NullString{String: detail, Valid: true}
+					case "A/C":
+						prop.Cooling = sql.NullString{String: detail, Valid: true}
+					case "Stories":
+						s, err := strconv.ParseFloat(detail, 64)
+						if err != nil {
+							Logger.Error("unable to convert stories to float", "err", err)
+						}
+						prop.Floors = sql.NullFloat64{Float64: s, Valid: true}
+					case "Bedrooms":
+						b, err := strconv.Atoi(detail)
+						if err != nil {
+							Logger.Error("unable to convert bedrooms to int", "err", err)
+						}
+						prop.Bedrooms = sql.NullInt16{Int16: int16(b), Valid: true}
+					case "Bathrooms":
+						b, err := strconv.ParseFloat(detail, 64)
+						if err != nil {
+							Logger.Error("unable to convert bathrooms to float", "err", err)
+						}
+						prop.Bathrooms = sql.NullFloat64{Float64: b, Valid: true}
+					}
+				}
+			})
+		})
 
 		c.OnResponse(func(r *colly.Response) {
 			if r.StatusCode != 200 {
@@ -220,7 +320,7 @@ func ScrapeParcelData(parcelIDs []string) error {
 		}
 
 		// Print the scraped data
-		fmt.Printf("\nScraped Parcel Data: %+v\n", parcelData)
+		fmt.Printf("\nScraped Parcel Data: %+v\n", prop)
 	}
 
 	return nil
