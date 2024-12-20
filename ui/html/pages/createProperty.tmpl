@@ -123,14 +123,14 @@
 			</div>
 		</div>
 
-		<!-- Fair Market Value -->
+		<!-- Appraisal Value -->
 		<div class="col-span-1">
-			<label for="fair_market_value" class="block text-sm font-medium text-gray-900">Fair Market Value</label>
+			<label for="appraisal_value" class="block text-sm font-medium text-gray-900">Appraisal Value</label>
 			<div class="mt-2">
-				{{with .Form.FieldErrors.fair_market_value}}
+				{{with .Form.FieldErrors.appraisal_value}}
 				<label class="error text-red-600">{{.}}</label>
 				{{end}}
-				<input type="number" name="fair_market_value" id="fair_market_value" value="{{.Form.FairMarketValue}}"
+				<input type="number" name="appraisal_value" id="appraisal_value" value="{{.Form.AppraisalValue}}"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
 			</div>
 		</div>
