@@ -173,9 +173,6 @@ func ScrapeGwinnettParcelData(parcelIDs []string) error {
 		url := fmt.Sprintf("https://gwinnettassessor.manatron.com/IWantTo/PropertyGISSearch/PropertyDetail.aspx?p=%s", parcelIDs[i])
 		prop.TaxURL = sql.NullString{String: url, Valid: true}
 
-		state := "Georgia"
-		prop.State = sql.NullString{String: state, Valid: true}
-
 		// Scrape the content of the relevant `div`
 		c.OnHTML("div#dnn_ctr1385_ContentPane", func(e *colly.HTMLElement) {
 			// Extract table rows within the div
