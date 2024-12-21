@@ -33,6 +33,7 @@ type Property struct {
 	YearBuilt        sql.NullInt16   `json:"year_built"`
 	TaxURL           sql.NullString  `json:"tax_assessor_url"`
 	ZillowURL        sql.NullString  `json:"zillow_url"`
+	FloorPlanPhoto   sql.NullString  `json:"floorplan_photo"`
 }
 
 type PropertyModel struct {
