@@ -15,6 +15,8 @@ type templateData struct {
 	Property        models.Property
 	Properties      []models.Property
 	Form            any
+	Counties        []models.County
+	County          models.County
 	Flash           string
 	IsAuthenticated bool
 	CSRFToken       string
