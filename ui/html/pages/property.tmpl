@@ -10,9 +10,14 @@
 		<dl class="divide-y divide-gray-100">
 			<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
 				<dt class="text-sm font-medium leading-6 text-gray-900">Street Address</dt>
-				<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0"> {{.Property.Address.String}}
-					{{.Property.City.String}},{{.Property.State.String}} {{.Property.Zip.String}}</dd>
+				<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+					{{.Property.Address.String}} {{.Property.City.String}}, {{if
+					.County}}{{.County.State}}{{else}}N/A{{end}}
+					{{.Property.Zip.String}}
+				</dd>
 			</div>
+
+
 			<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
 				<dt class="text-sm font-medium leading-6 text-gray-900">ParcelID</dt>
 				<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">{{.Property.ParcelID.String}}

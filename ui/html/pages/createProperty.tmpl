@@ -4,9 +4,9 @@
 <form action="/property/create" method="post">
 	<input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
 	<div class="grid grid-cols-4 gap-4 px-5">
-		<!-- Addy -->
+		<!-- Address -->
 		<div class="col-span-4">
-			<label for="Address" class="block text-sm font-medium text-gray-900">Address</label>
+			<label for="address" class="block text-sm font-medium text-gray-900">Address</label>
 			<div class="mt-2">
 				{{with .Form.FieldErrors.address}}
 				<label class="error text-red-600">{{.}}</label>
@@ -28,18 +28,6 @@
 			</div>
 		</div>
 
-		<!-- State -->
-		<div class="col-span-1">
-			<label for="state" class="block text-sm font-medium text-gray-900">State</label>
-			<div class="mt-2">
-				{{with .Form.FieldErrors.state}}
-				<label class="error text-red-600">{{.}}</label>
-				{{end}}
-				<input type="text" name="state" id="state" value="{{.Form.State}}"
-					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
-			</div>
-		</div>
-
 		<!-- ZIP Code -->
 		<div class="col-span-1">
 			<label for="zip_code" class="block text-sm font-medium text-gray-900">ZIP Code</label>
@@ -53,23 +41,18 @@
 		</div>
 
 		<!-- County ID -->
-		<!--TODO: Add available counties in a list-->
 		<div class="col-span-2">
 			<label for="county_id" class="block text-sm font-medium text-gray-900">County</label>
 			<div class="mt-2">
-				{{with .Form.FieldErrors.county}}
+				{{with .Form.FieldErrors.county_id}} <!-- Corrected here -->
 				<label class="error text-red-600">{{.}}</label>
 				{{end}}
 				<select name="county_id" id="county_id"
 					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-[#FF8040] sm:text-sm">
-					<option value="1" {{if eq .Form.County "1" }}selected{{end}}>Appling</option>
-					<option value="2" {{if eq .Form.County "2" }}selected{{end}}>Atkinson</option>
-					<option value="3" {{if eq .Form.County "3" }}selected{{end}}>Bacon</option>
-					<option value="4" {{if eq .Form.County "4" }}selected{{end}}>Baker</option>
-					<option value="5" {{if eq .Form.County "5" }}selected{{end}}>Baldwin</option>
-					<option value="6" {{if eq .Form.County "6" }}selected{{end}}>Banks</option>
-					<option value="7" {{if eq .Form.County "7" }}selected{{end}}>Barrow</option>
-					<option value="8" {{if eq .Form.County "8" }}selected{{end}}>Gwinnett</option>
+					<option value="">-- Select County --</option>
+					{{range .Counties}}
+					<option value="{{.ID}}">{{.Name}}, {{.State}}</option>
+					{{end}}
 				</select>
 			</div>
 		</div>
