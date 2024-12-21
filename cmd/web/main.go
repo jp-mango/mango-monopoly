@@ -26,6 +26,7 @@ import (
 type application struct {
 	logger         *slog.Logger
 	properties     *models.PropertyModel
+	counties       *models.CountyModel
 	templateCache  map[string]*template.Template
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
@@ -70,6 +71,7 @@ func main() {
 	app := &application{
 		logger:         logger,
 		properties:     &models.PropertyModel{DB: db},
+		counties:       &models.CountyModel{DB: db},
 		templateCache:  templateCache,
 		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
