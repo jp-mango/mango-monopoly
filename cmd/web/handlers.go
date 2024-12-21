@@ -50,11 +50,32 @@ func (app *application) propertyView(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.Property = *property
 
+	if property.CountyID.Valid {
+		county, err := app.counties.Get(property.CountyID.Int64)
+		if err != nil {
+			if errors.Is(err, models.ErrNoRecord) {
+				app.logger.Warn("County not found", "CountyID", property.CountyID.Int64)
+			} else {
+				app.serverError(w, r, err)
+				return
+			}
+		} else {
+			data.County = *county
+		}
+	}
+
 	app.render(w, r, http.StatusOK, "property.tmpl", data)
 }
 
 func (app *application) createPropertyPage(w http.ResponseWriter, r *http.Request) {
+	c, err := app.counties.All()
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
 	data := app.newTemplateData(r)
+	data.Counties = c
 	data.Form = propertyCreateForm{}
 	app.render(w, r, http.StatusOK, "createProperty.tmpl", data)
 }
@@ -62,9 +83,8 @@ func (app *application) createPropertyPage(w http.ResponseWriter, r *http.Reques
 type propertyCreateForm struct {
 	Address             string `form:"address"`
 	City                string `form:"city"`
-	State               string `form:"state"`
 	Zip                 string `form:"zip_code"`
-	County              string `form:"county_id"`
+	CountyID            string `form:"county_id"`
 	ParcelID            string `form:"parcel_id"`
 	PropertyType        string `form:"property_type"`
 	LandValue           string `form:"land_value"`
@@ -92,93 +112,148 @@ func (app *application) propertyCreatePost(w http.ResponseWriter, r *http.Reques
 	prop := models.Property{}
 
 	// Address
-	prop.Address = sql.NullString{String: r.PostForm.Get("address"), Valid: true}
-	form.CheckField(validator.NotBlank(prop.Address.String), "address", "Cannot be left blank")
+	prop.Address = sql.NullString{String: form.Address, Valid: validator.NotBlank(form.Address)}
+	if !prop.Address.Valid {
+		form.AddFieldError("address", "Cannot be left blank")
+	}
 
 	// City
-	prop.City = sql.NullString{String: r.PostForm.Get("city"), Valid: true}
-	form.CheckField(validator.NotBlank(prop.City.String), "city", "Cannot be left blank")
-
-	// State
-	prop.State = sql.NullString{String: r.PostForm.Get("state"), Valid: true}
-	form.CheckField(validator.NotBlank(prop.State.String), "state", "Cannot be left blank")
+	prop.City = sql.NullString{String: form.City, Valid: validator.NotBlank(form.City)}
+	if !prop.City.Valid {
+		form.AddFieldError("city", "Cannot be left blank")
+	}
 
 	// Zip Code
-	prop.Zip = sql.NullString{String: r.PostForm.Get("zip_code"), Valid: true}
-	form.CheckField(validator.MaxChars(prop.Zip.String, 7), "zip_code", "Cannot be longer than 7 characters")
-	form.CheckField(validator.NotBlank(prop.Zip.String), "zip_code", "Cannot be left blank")
+	prop.Zip = sql.NullString{String: form.Zip, Valid: validator.NotBlank(form.Zip) && validator.MaxChars(form.Zip, 7)}
+	if !prop.Zip.Valid {
+		if !validator.NotBlank(form.Zip) {
+			form.AddFieldError("zip_code", "Cannot be left blank")
+		} else {
+			form.AddFieldError("zip_code", "Cannot be longer than 7 characters")
+		}
+	}
 
-	// County
-	prop.County = sql.NullString{String: r.PostForm.Get("county_id"), Valid: true}
-	form.CheckField(validator.NotBlank(prop.County.String), "county_id", "Cannot be left blank")
+	// CountyID
+	countyID, err := strconv.ParseInt(form.CountyID, 10, 64)
+	if err != nil {
+		form.AddFieldError("county_id", "Invalid County")
+	}
+	prop.CountyID = sql.NullInt64{Int64: countyID, Valid: err == nil}
+	if !prop.CountyID.Valid {
+		form.AddFieldError("county_id", "Cannot be left blank")
+	}
 
 	// Parcel ID
-	prop.ParcelID = sql.NullString{String: r.PostForm.Get("parcel_id"), Valid: true}
-	form.CheckField(validator.NotBlank(prop.ParcelID.String), "parcel_id", "Cannot be left blank")
-	form.CheckField(app.properties.GetByParcel(prop.ParcelID.String), "parcel_id", "Property already exists")
+	prop.ParcelID = sql.NullString{String: form.ParcelID, Valid: validator.NotBlank(form.ParcelID)}
+	if !prop.ParcelID.Valid {
+		form.AddFieldError("parcel_id", "Cannot be left blank")
+	} else {
+		// Check if Parcel ID already exists
+		exists, err := app.properties.GetByParcel(prop.ParcelID.String)
+		if err != nil && err != models.ErrNoRecord {
+			app.serverError(w, r, err)
+			return
+		}
+		if exists != nil { // Property exists
+			form.AddFieldError("parcel_id", "Property already exists")
+		}
+	}
 
 	// Property Type
-	prop.PropertyType = sql.NullString{String: r.PostForm.Get("property_type"), Valid: true}
-	form.CheckField(validator.NotBlank(prop.PropertyType.String), "property_type", "Cannot be left blank")
-
-	// Numeric fields
-	landValue, err := strconv.ParseInt(r.PostForm.Get("land_value"), 10, 64)
-	if err != nil {
-		form.AddFieldError("land_value", "Enter an integer")
+	prop.PropertyType = sql.NullString{String: form.PropertyType, Valid: validator.NotBlank(form.PropertyType)}
+	if !prop.PropertyType.Valid {
+		form.AddFieldError("property_type", "Cannot be left blank")
 	}
-	prop.LandValue = sql.NullInt64{Int64: landValue, Valid: err == nil}
 
-	improvementValue, err := strconv.ParseInt(r.PostForm.Get("improvement_value"), 10, 64)
-	if err != nil {
-		form.AddFieldError("improvement_value", "Enter an integer")
+	// Numeric Fields
+	if form.LandValue != "" {
+		landValue, err := strconv.ParseInt(form.LandValue, 10, 64)
+		if err != nil {
+			form.AddFieldError("land_value", "Enter an integer")
+		} else {
+			prop.LandValue = sql.NullInt64{Int64: landValue, Valid: true}
+		}
 	}
-	prop.LandValue = sql.NullInt64{Int64: improvementValue, Valid: err == nil}
 
-	fairMarketValue, err := strconv.ParseInt(r.PostForm.Get("appraisal_value"), 10, 64)
-	if err != nil {
-		form.AddFieldError("appraisal_value", "Enter an integer")
+	if form.ImprovementValue != "" {
+		improvementValue, err := strconv.ParseInt(form.ImprovementValue, 10, 64)
+		if err != nil {
+			form.AddFieldError("improvement_value", "Enter an integer")
+		} else {
+			prop.ImprovementValue = sql.NullInt64{Int64: improvementValue, Valid: true}
+		}
 	}
-	prop.AppraisalValue = sql.NullInt64{Int64: fairMarketValue, Valid: err == nil}
 
-	lotSize, err := strconv.ParseFloat(r.PostForm.Get("lot_size"), 64)
-	if err != nil {
-		form.AddFieldError("lot_size", "Enter a number")
+	if form.AppraisalValue != "" {
+		appraisalValue, err := strconv.ParseInt(form.AppraisalValue, 10, 64)
+		if err != nil {
+			form.AddFieldError("appraisal_value", "Enter an integer")
+		} else {
+			prop.AppraisalValue = sql.NullInt64{Int64: appraisalValue, Valid: true}
+		}
 	}
-	prop.LotSize = sql.NullFloat64{Float64: lotSize, Valid: err == nil}
 
-	squareFootage, err := strconv.ParseInt(r.PostForm.Get("square_footage"), 10, 64)
-	if err != nil {
-		form.AddFieldError("square_footage", "Enter a number")
+	if form.LotSize != "" {
+		lotSize, err := strconv.ParseFloat(form.LotSize, 64)
+		if err != nil {
+			form.AddFieldError("lot_size", "Enter a number")
+		} else {
+			prop.LotSize = sql.NullFloat64{Float64: lotSize, Valid: true}
+		}
 	}
-	prop.SquareFt = sql.NullInt64{Int64: squareFootage, Valid: err == nil}
 
-	bedrooms, err := strconv.ParseInt(r.PostForm.Get("bedrooms"), 10, 16)
-	if err != nil {
-		form.AddFieldError("bedrooms", "Enter a number")
+	if form.SquareFootage != "" {
+		squareFootage, err := strconv.ParseInt(form.SquareFootage, 10, 64)
+		if err != nil {
+			form.AddFieldError("square_footage", "Enter a number")
+		} else {
+			prop.SquareFt = sql.NullInt64{Int64: squareFootage, Valid: true}
+		}
 	}
-	prop.Bedrooms = sql.NullInt16{Int16: int16(bedrooms), Valid: err == nil}
 
-	bathrooms, err := strconv.ParseFloat(r.PostForm.Get("bathrooms"), 64)
-	if err != nil {
-		form.AddFieldError("bathrooms", "Enter a number")
+	if form.Bedrooms != "" {
+		bedrooms, err := strconv.ParseInt(form.Bedrooms, 10, 16)
+		if err != nil {
+			form.AddFieldError("bedrooms", "Enter a number")
+		} else {
+			prop.Bedrooms = sql.NullInt16{Int16: int16(bedrooms), Valid: true}
+		}
 	}
-	prop.Bathrooms = sql.NullFloat64{Float64: float64(bathrooms), Valid: err == nil}
 
-	yearBuilt, err := strconv.ParseInt(r.PostForm.Get("year_built"), 10, 64)
-	if err != nil {
-		form.AddFieldError("year_built", "Enter a number")
+	if form.Bathrooms != "" {
+		bathrooms, err := strconv.ParseFloat(form.Bathrooms, 64)
+		if err != nil {
+			form.AddFieldError("bathrooms", "Enter a number")
+		} else {
+			prop.Bathrooms = sql.NullFloat64{Float64: bathrooms, Valid: true}
+		}
 	}
-	prop.YearBuilt = sql.NullInt16{Int16: int16(yearBuilt), Valid: err == nil}
+
+	if form.YearBuilt != "" {
+		yearBuilt, err := strconv.ParseInt(form.YearBuilt, 10, 16)
+		if err != nil {
+			form.AddFieldError("year_built", "Enter a number")
+		} else {
+			prop.YearBuilt = sql.NullInt16{Int16: int16(yearBuilt), Valid: true}
+		}
+	}
 
 	// URLs
-	prop.TaxURL = sql.NullString{String: r.PostForm.Get("tax_assessor_url"), Valid: true}
-
-	prop.ZillowURL = sql.NullString{String: r.PostForm.Get("zillow_url"), Valid: true}
+	prop.TaxURL = sql.NullString{String: form.TaxURL, Valid: form.TaxURL != ""}
+	prop.ZillowURL = sql.NullString{String: form.ZillowURL, Valid: form.ZillowURL != ""}
+	prop.FloorPlanPhoto = sql.NullString{String: r.PostForm.Get("floorplan_photo"), Valid: r.PostForm.Get("floorplan_photo") != ""}
 
 	// Check for field errors
 	if !form.Valid() {
+		counties, err := app.counties.All()
+		if err != nil {
+			app.serverError(w, r, err)
+			return
+		}
+
 		data := app.newTemplateData(r)
 		data.Form = form
+		data.Counties = counties
 		app.render(w, r, http.StatusUnprocessableEntity, "createProperty.tmpl", data)
 		return
 	}
