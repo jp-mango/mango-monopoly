@@ -11,9 +11,8 @@ type Property struct {
 	ID               int64           `json:"id"`
 	Address          sql.NullString  `json:"address"`
 	City             sql.NullString  `json:"city"`
-	State            sql.NullString  `json:"state"`
 	Zip              sql.NullString  `json:"zip"`
-	County           sql.NullString  `json:"county_id"`
+	CountyID         sql.NullInt64   `json:"county_id"`
 	ParcelID         sql.NullString  `json:"parcel_id"`
 	PropertyType     sql.NullString  `json:"property_type"`
 	PropertyClass    sql.NullString  `json:"property_class"`
@@ -40,13 +39,51 @@ type PropertyModel struct {
 	DB *sql.DB
 }
 
-func (m *PropertyModel) Insert(property *Property) (int64, error) {
+func (m *PropertyModel) Insert(p *Property) (int64, error) {
 
 	query := `
-		INSERT INTO properties (situs, city, "state", "zip_code",county_id,parcel_id,property_type,land_value, improvement_value, appraisal_value,lot_size, square_footage,bedrooms,bathrooms, year_built, tax_assessor_url,zillow_url)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING property_id`
+        INSERT INTO properties (
+            situs, 
+            city, 
+            zip_code,
+            county_id,
+            parcel_id,
+            property_type,
+            land_value, 
+            improvement_value, 
+            appraisal_value,
+            lot_size, 
+            square_footage,
+            bedrooms,
+            bathrooms, 
+            year_built, 
+            tax_assessor_url,
+            zillow_url,
+            floorplan_photo
+        )
+        VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
+        ) RETURNING property_id`
 
-	args := []any{property.Address, property.City, property.State, property.Zip, property.County, property.ParcelID, property.PropertyType, property.LandValue, property.ImprovementValue, property.AppraisalValue, property.LotSize, property.SquareFt, property.Bedrooms, property.Bathrooms, property.YearBuilt, property.TaxURL, property.ZillowURL}
+	args := []any{
+		p.Address,
+		p.City,
+		p.Zip,
+		p.CountyID,
+		p.ParcelID,
+		p.PropertyType,
+		p.LandValue,
+		p.ImprovementValue,
+		p.AppraisalValue,
+		p.LotSize,
+		p.SquareFt,
+		p.Bedrooms,
+		p.Bathrooms,
+		p.YearBuilt,
+		p.TaxURL,
+		p.ZillowURL,
+		p.FloorPlanPhoto,
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -66,79 +103,150 @@ func (m *PropertyModel) Get(id int64) (*Property, error) {
 	}
 
 	query := `
-		SELECT property_id,
-		situs,
-		city,
-		"state",
-		zip_code,
-		parcel_id,
-		property_type,
-		land_value,
-		improvement_value,
-		appraisal_value,
-		lot_size
-		FROM properties
-		WHERE property_id = $1`
-	var property Property
+        SELECT 
+            property_id,
+            situs,
+            city,
+            zip_code,
+            county_id,
+            parcel_id,
+            property_type,
+            land_value,
+            improvement_value,
+            appraisal_value,
+            lot_size,
+            square_footage,
+            bedrooms,
+            bathrooms,
+            year_built,
+            tax_assessor_url,
+            zillow_url,
+            floorplan_photo
+        FROM properties
+        WHERE property_id = $1`
+
+	var p Property
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	err := m.DB.QueryRowContext(ctx, query, id).Scan(
-		&property.ID,
-		&property.Address,
-		&property.City,
-		&property.State,
-		&property.Zip,
-		&property.ParcelID,
-		&property.PropertyType,
-		&property.LandValue,
-		&property.ImprovementValue,
-		&property.AppraisalValue,
-		&property.LotSize,
+		&p.ID,
+		&p.Address,
+		&p.City,
+		&p.Zip,
+		&p.CountyID, // Changed from &p.County
+		&p.ParcelID,
+		&p.PropertyType,
+		&p.LandValue,
+		&p.ImprovementValue,
+		&p.AppraisalValue,
+		&p.LotSize,
+		&p.SquareFt,
+		&p.Bedrooms,
+		&p.Bathrooms,
+		&p.YearBuilt,
+		&p.TaxURL,
+		&p.ZillowURL,
+		&p.FloorPlanPhoto,
 	)
 	if err != nil {
-		if err == ErrNoRecord {
+		if err == sql.ErrNoRows {
 			return nil, ErrNoRecord
 		}
 		return nil, err
 	}
 
-	return &property, nil
+	return &p, nil
 }
 
-func (m *PropertyModel) GetByParcel(parcel_id string) bool {
+func (m *PropertyModel) GetByParcel(parcel_id string) (*Property, error) {
 	if parcel_id == "" {
-		return false
+		return nil, ErrNoRecord
 	}
 
 	query := `
-		SELECT property_id,
-		WHERE parcel_id = $1`
+        SELECT 
+            property_id,
+            situs,
+            city,
+            zip_code,
+            county_id,
+            parcel_id,
+            property_type,
+            land_value,
+            improvement_value,
+            appraisal_value,
+            lot_size,
+            square_footage,
+            bedrooms,
+            bathrooms,
+            year_built,
+            tax_assessor_url,
+            zillow_url,
+            floorplan_photo
+        FROM properties
+        WHERE parcel_id = $1`
+
+	var p Property
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	row := m.DB.QueryRowContext(ctx, query, parcel_id)
-	return row != nil
+	err := m.DB.QueryRowContext(ctx, query, parcel_id).Scan(
+		&p.ID,
+		&p.Address,
+		&p.City,
+		&p.Zip,
+		&p.CountyID,
+		&p.ParcelID,
+		&p.PropertyType,
+		&p.LandValue,
+		&p.ImprovementValue,
+		&p.AppraisalValue,
+		&p.LotSize,
+		&p.SquareFt,
+		&p.Bedrooms,
+		&p.Bathrooms,
+		&p.YearBuilt,
+		&p.TaxURL,
+		&p.ZillowURL,
+		&p.FloorPlanPhoto,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNoRecord
+		}
+		return nil, err
+	}
+
+	return &p, nil
 }
 
 func (m *PropertyModel) Latest() ([]Property, error) {
 	query := `
-		SELECT property_id,
-		situs,
-		city,
-		"state",
-		zip_code,
-		parcel_id,
-		property_type,
-		land_value,
-		improvement_value,
-		appraisal_value,
-		lot_size
-		FROM properties
-		ORDER BY property_id DESC
-		LIMIT 15`
+        SELECT 
+            property_id,
+            situs,
+            city,
+            zip_code,
+            county_id,
+            parcel_id,
+            property_type,
+            land_value,
+            improvement_value,
+            appraisal_value,
+            lot_size,
+            square_footage,
+            bedrooms,
+            bathrooms,
+            year_built,
+            tax_assessor_url,
+            zillow_url,
+            floorplan_photo
+        FROM properties
+        ORDER BY property_id DESC
+        LIMIT 15`
 
 	var latestProperties []Property
 
@@ -147,7 +255,7 @@ func (m *PropertyModel) Latest() ([]Property, error) {
 
 	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {
-		if err == ErrNoRecord {
+		if err == sql.ErrNoRows {
 			return nil, ErrNoRecord
 		}
 		return nil, err
@@ -156,24 +264,31 @@ func (m *PropertyModel) Latest() ([]Property, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var property Property
+		var p Property
 		err := rows.Scan(
-			&property.ID,
-			&property.Address,
-			&property.City,
-			&property.State,
-			&property.Zip,
-			&property.ParcelID,
-			&property.PropertyType,
-			&property.LandValue,
-			&property.ImprovementValue,
-			&property.AppraisalValue,
-			&property.LotSize,
+			&p.ID,
+			&p.Address,
+			&p.City,
+			&p.Zip,
+			&p.CountyID, // Changed from &p.County
+			&p.ParcelID,
+			&p.PropertyType,
+			&p.LandValue,
+			&p.ImprovementValue,
+			&p.AppraisalValue,
+			&p.LotSize,
+			&p.SquareFt,
+			&p.Bedrooms,
+			&p.Bathrooms,
+			&p.YearBuilt,
+			&p.TaxURL,
+			&p.ZillowURL,
+			&p.FloorPlanPhoto,
 		)
 		if err != nil {
 			return nil, err
 		}
-		latestProperties = append(latestProperties, property)
+		latestProperties = append(latestProperties, p)
 	}
 
 	if err = rows.Err(); err != nil {
