@@ -21,6 +21,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+//!git test
+
 type application struct {
 	logger         *slog.Logger
 	properties     *models.PropertyModel
