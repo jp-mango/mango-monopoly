@@ -259,48 +259,57 @@ func ScrapeGwinnettParcelData(parcelIDs []string) error {
 			})
 		})
 
-		//TODO: fix this section, not pulling in required data from website
-		c.OnHTML("div#1388Attributes table#Attribute", func(e *colly.HTMLElement) {
-			e.ForEach("tr", func(rowIndex int, row *colly.HTMLElement) {
-				if rowIndex == 0 {
+		c.OnHTML("div#1388Attributes", func(e *colly.HTMLElement) {
+			// Focus on the table body rows
+			e.ForEach("table#Attribute tbody tr", func(rowIndex int, row *colly.HTMLElement) {
+				// Skip the first "jqgfirstrow" which is often just a spacer
+				if row.Attr("class") == "jqgfirstrow" {
 					return
 				}
-				// Extract "Attribute" and "Detail" columns
-				attribute := strings.TrimSpace(row.ChildText("td[aria-describedby='Attribute_Attribute']"))
-				detail := strings.TrimSpace(row.ChildText("td[aria-describedby='Attribute_Detail']"))
 
-				// Only process rows with valid data
-				if attribute != "" && detail != "" {
-					switch attribute {
-					case "Roof Structure":
-						prop.RoofStructure = sql.NullString{String: detail, Valid: true}
-					case "Roof Cover":
-						prop.RoofCover = sql.NullString{String: detail, Valid: true}
-					case "Heating":
-						prop.Heating = sql.NullString{String: detail, Valid: true}
-					case "A/C":
-						prop.Cooling = sql.NullString{String: detail, Valid: true}
-					case "Stories":
-						s, err := strconv.ParseFloat(detail, 64)
-						if err != nil {
-							Logger.Error("unable to convert stories to float", "err", err)
-						}
-						prop.Floors = sql.NullFloat64{Float64: s, Valid: true}
-					case "Bedrooms":
-						b, err := strconv.Atoi(detail)
-						if err != nil {
-							Logger.Error("unable to convert bedrooms to int", "err", err)
-						}
-						prop.Bedrooms = sql.NullInt16{Int16: int16(b), Valid: true}
-					case "Bathrooms":
-						b, err := strconv.ParseFloat(detail, 64)
-						if err != nil {
-							Logger.Error("unable to convert bathrooms to float", "err", err)
-						}
-						prop.Bathrooms = sql.NullFloat64{Float64: b, Valid: true}
+				// The attribute name is in the second td
+				attribute := strings.TrimSpace(row.ChildText("td:nth-of-type(2)"))
+				// The detail is in the third td
+				detail := strings.TrimSpace(row.ChildText("td:nth-of-type(3)"))
+
+				switch attribute {
+				case "Roof Structure":
+					prop.RoofStructure = sql.NullString{String: detail, Valid: true}
+				case "Roof Cover":
+					prop.RoofCover = sql.NullString{String: detail, Valid: true}
+				case "Heating":
+					prop.Heating = sql.NullString{String: detail, Valid: true}
+				case "A/C":
+					prop.Cooling = sql.NullString{String: detail, Valid: true}
+				case "Stories":
+					s, err := strconv.ParseFloat(detail, 64)
+					if err != nil {
+						Logger.Error("unable to convert stories to float", "err", err)
 					}
+					prop.Floors = sql.NullFloat64{Float64: s, Valid: true}
+				case "Bedrooms":
+					b, err := strconv.Atoi(detail)
+					if err != nil {
+						Logger.Error("unable to convert bedrooms to int", "err", err)
+					}
+					prop.Bedrooms = sql.NullInt16{Int16: int16(b), Valid: true}
+				case "Bathrooms":
+					b, err := strconv.ParseFloat(detail, 64)
+					if err != nil {
+						Logger.Error("unable to convert bathrooms to float", "err", err)
+					}
+					prop.Bathrooms = sql.NullFloat64{Float64: b, Valid: true}
 				}
 			})
+		})
+
+		c.OnHTML("img#sketch", func(e *colly.HTMLElement) {
+			imgURL := e.Attr("src")
+			if imgURL != "" {
+				// Convert to absolute URL if necessary
+				imgURL = e.Request.AbsoluteURL(imgURL)
+				prop.FloorPlanPhoto = sql.NullString{String: imgURL, Valid: true}
+			}
 		})
 
 		c.OnResponse(func(r *colly.Response) {
