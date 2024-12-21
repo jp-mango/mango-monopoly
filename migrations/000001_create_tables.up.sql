@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS Properties (property_id SERIAL PRIMARY KEY,
 																																								situs TEXT, city TEXT, "state" TEXT, zip_code VARCHAR(7),
 																																								county_id INT, parcel_id VARCHAR(150) NOT NULL UNIQUE,
 																																								property_type TEXT,property_class TEXT, grade TEXT,roof_structure TEXT, roof_cover TEXT, heating TEXT, cooling TEXT, floors INT,land_value NUMERIC, improvement_value NUMERIC, appraisal_value NUMERIC, lot_size NUMERIC, square_footage NUMERIC, bedrooms INT, bathrooms NUMERIC, year_built INT, tax_assessor_url VARCHAR(200),
-																																								zillow_url VARCHAR(200));
+																																								zillow_url VARCHAR(200), floorplan_photo TEXT);
 
 
 CREATE TABLE IF NOT EXISTS Property_Images (image_id SERIAL PRIMARY KEY,
