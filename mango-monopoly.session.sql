@@ -1,2 +1,2 @@
 SELECT *
-FROM properties;
+from properties
