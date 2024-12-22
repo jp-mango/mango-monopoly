@@ -404,25 +404,43 @@ func (app *application) scrapeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err := gwinnettData.ScrapeAuctionData()
 	if err != nil {
-		fmt.Fprintf(w, "Error: %v\n", err)
-	} else {
-		fmt.Fprintf(w, "Scraping completed\n")
+		app.serverError(w, r, fmt.Errorf("error scraping auction data: %w", err))
+		return
 	}
 
 	parcelIDs, err := scraper.ProcessCSV("./scraper/Gwinnett")
 	if err != nil {
-		app.serverError(w, r, fmt.Errorf("error: %w", err))
+		app.serverError(w, r, fmt.Errorf("error processing CSV: %w", err))
+		return
 	}
 
-	err = scraper.ScrapeGwinnettParcelData(parcelIDs)
+	properties, err := scraper.ScrapeGwinnettParcelData(parcelIDs)
 	if err != nil {
-		app.serverError(w, r, err)
+		app.serverError(w, r, fmt.Errorf("error scraping parcel data: %w", err))
+		return
 	}
-	/*
-		pauldingData := scraper.CountyScraper{
-			Name:    "Paulding",
-			Webpage: "",
-			Domain:  "",
+
+	for _, prop := range properties {
+		// Check if the property already exists
+		exists, err := app.properties.Exists(prop.ParcelID.String)
+		if err != nil {
+			app.logger.Error("error checking property existence", "err", err)
+			continue
 		}
-	*/
+
+		if exists {
+			app.logger.Info("property already exists", "parcel_id", prop.ParcelID.String)
+			continue
+		}
+
+		// Insert only if it doesn't exist
+		id, err := app.properties.Insert(prop)
+		if err != nil {
+			app.logger.Error("error inserting property", "err", err)
+			continue
+		}
+		app.logger.Info(fmt.Sprintf("successfully inserted property %d", id))
+	}
+
+	http.Redirect(w, r, "/properties", http.StatusSeeOther)
 }
