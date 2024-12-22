@@ -160,18 +160,23 @@ type ParcelData struct {
 	DeedAcres     float32
 }
 
-func ScrapeGwinnettParcelData(parcelIDs []string) error {
-	c := colly.NewCollector(
-		colly.AllowedDomains("gwinnettassessor.manatron.com"),
-	)
+func ScrapeGwinnettParcelData(parcelIDs []string) ([]*models.Property, error) {
+	var properties []*models.Property
 
 	for i := 0; i < len(parcelIDs); i++ {
-		var prop models.Property
 
 		parcelIDs[i] = strings.Replace(parcelIDs[i], " ", "%20", -1)
 
+		c := colly.NewCollector(
+			colly.AllowedDomains("gwinnettassessor.manatron.com"),
+		)
+
 		url := fmt.Sprintf("https://gwinnettassessor.manatron.com/IWantTo/PropertyGISSearch/PropertyDetail.aspx?p=%s", parcelIDs[i])
-		prop.TaxURL = sql.NullString{String: url, Valid: true}
+
+		prop := &models.Property{
+			TaxURL:   sql.NullString{String: url, Valid: true},
+			CountyID: sql.NullInt64{Int64: 1, Valid: true},
+		}
 
 		// Scrape the content of the relevant `div`
 		c.OnHTML("div#dnn_ctr1385_ContentPane", func(e *colly.HTMLElement) {
@@ -322,12 +327,12 @@ func ScrapeGwinnettParcelData(parcelIDs []string) error {
 		err := c.Visit(url)
 		if err != nil {
 			fmt.Printf("Error visiting webpage: %v\n", err)
-			return err
+			return nil, err
 		}
 
 		// Print the scraped data
-		fmt.Printf("\nScraped Parcel Data: %+v\n", prop)
+		properties = append(properties, prop)
 	}
 
-	return nil
+	return properties, nil
 }
