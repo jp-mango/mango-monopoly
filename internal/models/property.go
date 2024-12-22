@@ -40,7 +40,22 @@ type PropertyModel struct {
 }
 
 func (m *PropertyModel) Insert(p *Property) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
+	// Check if the property already exists
+	exists, err := m.Exists(p.ParcelID.String)
+	if err != nil {
+		return 0, err
+	}
+
+	// If the property exists, return early without inserting
+	if exists {
+		return 0, nil // No new row inserted
+	}
+
+	// Insert the property
+	var id int64
 	query := `
         INSERT INTO properties (
             situs, 
@@ -60,12 +75,10 @@ func (m *PropertyModel) Insert(p *Property) (int64, error) {
             tax_assessor_url,
             zillow_url,
             floorplan_photo
-        )
-        VALUES (
+        ) VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
         ) RETURNING property_id`
-
-	args := []any{
+	err = m.DB.QueryRowContext(ctx, query,
 		p.Address,
 		p.City,
 		p.Zip,
@@ -83,13 +96,7 @@ func (m *PropertyModel) Insert(p *Property) (int64, error) {
 		p.TaxURL,
 		p.ZillowURL,
 		p.FloorPlanPhoto,
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
-	var id int64
-	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&id)
+	).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -111,6 +118,13 @@ func (m *PropertyModel) Get(id int64) (*Property, error) {
             county_id,
             parcel_id,
             property_type,
+            property_class,
+            grade,
+            roof_structure,
+            roof_cover,
+            heating,
+            cooling,
+            floors,
             land_value,
             improvement_value,
             appraisal_value,
@@ -131,24 +145,11 @@ func (m *PropertyModel) Get(id int64) (*Property, error) {
 	defer cancel()
 
 	err := m.DB.QueryRowContext(ctx, query, id).Scan(
-		&p.ID,
-		&p.Address,
-		&p.City,
-		&p.Zip,
-		&p.CountyID, // Changed from &p.County
-		&p.ParcelID,
-		&p.PropertyType,
-		&p.LandValue,
-		&p.ImprovementValue,
-		&p.AppraisalValue,
-		&p.LotSize,
-		&p.SquareFt,
-		&p.Bedrooms,
-		&p.Bathrooms,
-		&p.YearBuilt,
-		&p.TaxURL,
-		&p.ZillowURL,
-		&p.FloorPlanPhoto,
+		&p.ID, &p.Address, &p.City, &p.Zip, &p.CountyID, &p.ParcelID, &p.PropertyType,
+		&p.PropertyClass, &p.Grade, &p.RoofStructure, &p.RoofCover, &p.Heating,
+		&p.Cooling, &p.Floors, &p.LandValue, &p.ImprovementValue, &p.AppraisalValue,
+		&p.LotSize, &p.SquareFt, &p.Bedrooms, &p.Bathrooms, &p.YearBuilt,
+		&p.TaxURL, &p.ZillowURL, &p.FloorPlanPhoto,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -160,8 +161,8 @@ func (m *PropertyModel) Get(id int64) (*Property, error) {
 	return &p, nil
 }
 
-func (m *PropertyModel) GetByParcel(parcel_id string) (*Property, error) {
-	if parcel_id == "" {
+func (m *PropertyModel) GetByParcel(parcelID string) (*Property, error) {
+	if parcelID == "" {
 		return nil, ErrNoRecord
 	}
 
@@ -174,6 +175,13 @@ func (m *PropertyModel) GetByParcel(parcel_id string) (*Property, error) {
             county_id,
             parcel_id,
             property_type,
+            property_class,
+            grade,
+            roof_structure,
+            roof_cover,
+            heating,
+            cooling,
+            floors,
             land_value,
             improvement_value,
             appraisal_value,
@@ -193,25 +201,12 @@ func (m *PropertyModel) GetByParcel(parcel_id string) (*Property, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	err := m.DB.QueryRowContext(ctx, query, parcel_id).Scan(
-		&p.ID,
-		&p.Address,
-		&p.City,
-		&p.Zip,
-		&p.CountyID,
-		&p.ParcelID,
-		&p.PropertyType,
-		&p.LandValue,
-		&p.ImprovementValue,
-		&p.AppraisalValue,
-		&p.LotSize,
-		&p.SquareFt,
-		&p.Bedrooms,
-		&p.Bathrooms,
-		&p.YearBuilt,
-		&p.TaxURL,
-		&p.ZillowURL,
-		&p.FloorPlanPhoto,
+	err := m.DB.QueryRowContext(ctx, query, parcelID).Scan(
+		&p.ID, &p.Address, &p.City, &p.Zip, &p.CountyID, &p.ParcelID, &p.PropertyType,
+		&p.PropertyClass, &p.Grade, &p.RoofStructure, &p.RoofCover, &p.Heating,
+		&p.Cooling, &p.Floors, &p.LandValue, &p.ImprovementValue, &p.AppraisalValue,
+		&p.LotSize, &p.SquareFt, &p.Bedrooms, &p.Bathrooms, &p.YearBuilt,
+		&p.TaxURL, &p.ZillowURL, &p.FloorPlanPhoto,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -233,6 +228,13 @@ func (m *PropertyModel) Latest() ([]Property, error) {
             county_id,
             parcel_id,
             property_type,
+            property_class,
+            grade,
+            roof_structure,
+            roof_cover,
+            heating,
+            cooling,
+            floors,
             land_value,
             improvement_value,
             appraisal_value,
@@ -248,7 +250,7 @@ func (m *PropertyModel) Latest() ([]Property, error) {
         ORDER BY property_id DESC
         LIMIT 15`
 
-	var latestProperties []Property
+	var properties []Property
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -260,40 +262,36 @@ func (m *PropertyModel) Latest() ([]Property, error) {
 		}
 		return nil, err
 	}
-
 	defer rows.Close()
 
 	for rows.Next() {
 		var p Property
 		err := rows.Scan(
-			&p.ID,
-			&p.Address,
-			&p.City,
-			&p.Zip,
-			&p.CountyID, // Changed from &p.County
-			&p.ParcelID,
-			&p.PropertyType,
-			&p.LandValue,
-			&p.ImprovementValue,
-			&p.AppraisalValue,
-			&p.LotSize,
-			&p.SquareFt,
-			&p.Bedrooms,
-			&p.Bathrooms,
-			&p.YearBuilt,
-			&p.TaxURL,
-			&p.ZillowURL,
-			&p.FloorPlanPhoto,
+			&p.ID, &p.Address, &p.City, &p.Zip, &p.CountyID, &p.ParcelID, &p.PropertyType,
+			&p.PropertyClass, &p.Grade, &p.RoofStructure, &p.RoofCover, &p.Heating,
+			&p.Cooling, &p.Floors, &p.LandValue, &p.ImprovementValue, &p.AppraisalValue,
+			&p.LotSize, &p.SquareFt, &p.Bedrooms, &p.Bathrooms, &p.YearBuilt,
+			&p.TaxURL, &p.ZillowURL, &p.FloorPlanPhoto,
 		)
 		if err != nil {
 			return nil, err
 		}
-		latestProperties = append(latestProperties, p)
+		properties = append(properties, p)
 	}
 
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return latestProperties, nil
+	return properties, nil
+}
+
+func (m *PropertyModel) Exists(parcelID string) (bool, error) {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM properties WHERE parcel_id = $1)`
+	err := m.DB.QueryRow(query, parcelID).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
 }
