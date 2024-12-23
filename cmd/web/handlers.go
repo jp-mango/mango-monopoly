@@ -436,9 +436,10 @@ func (app *application) scrapeHandler(w http.ResponseWriter, r *http.Request) {
 		// Insert only if it doesn't exist
 		id, err := app.properties.Insert(prop)
 		if err != nil {
-			app.logger.Error("error inserting property", "err", err)
+			app.logger.Error("error inserting property", "parcel id", prop.ParcelID, "err", err)
 			continue
 		}
+
 		app.logger.Info(fmt.Sprintf("successfully inserted property %d", id))
 	}
 
