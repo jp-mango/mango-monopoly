@@ -71,9 +71,9 @@ func (m *PropertyModel) Insert(p *Property) (int64, error) {
             cooling,
             floors,
             land_value,
-			starting_bid,
             improvement_value, 
             appraisal_value,
+			starting_bid,
             lot_size, 
             square_footage,
             bedrooms,
@@ -84,13 +84,13 @@ func (m *PropertyModel) Insert(p *Property) (int64, error) {
             floorplan_photo
         )
         VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24,$25
         ) RETURNING property_id`
 
 	args := []any{
 		p.Address, p.City, p.Zip, p.CountyID, p.ParcelID, p.PropertyType,
 		p.PropertyClass, p.Grade, p.RoofStructure, p.RoofCover, p.Heating,
-		p.Cooling, p.Floors, p.LandValue, p.ImprovementValue, p.AppraisalValue,
+		p.Cooling, p.Floors, p.LandValue, p.ImprovementValue, p.AppraisalValue, p.StartingBid,
 		p.LotSize, p.SquareFt, p.Bedrooms, p.Bathrooms, p.YearBuilt, p.TaxURL,
 		p.ZillowURL, p.FloorPlanPhoto,
 	}
