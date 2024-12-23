@@ -341,7 +341,7 @@ func ScrapeGwinnettParcelData(parcelIDs []string, startingBid []string) ([]*mode
 		properties = append(properties, prop)
 	}
 	for _, v := range properties {
-		fmt.Println(v)
+		fmt.Println(v.StartingBid)
 	}
 	return properties, nil
 }
