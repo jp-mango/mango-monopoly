@@ -25,6 +25,7 @@ type Property struct {
 	LandValue        sql.NullInt64   `json:"land_value"`
 	ImprovementValue sql.NullInt64   `json:"improvement_value"`
 	AppraisalValue   sql.NullInt64   `json:"appraisal_value"`
+	StartingBid      sql.NullFloat64 `json:"starting_bid"`
 	LotSize          sql.NullFloat64 `json:"lot_size"`
 	SquareFt         sql.NullInt64   `json:"square_footage"`
 	Bedrooms         sql.NullInt16   `json:"bedrooms"`
@@ -54,8 +55,6 @@ func (m *PropertyModel) Insert(p *Property) (int64, error) {
 		return 0, nil // No new row inserted
 	}
 
-	// Insert the property
-	var id int64
 	query := `
         INSERT INTO properties (
             situs, 
@@ -64,6 +63,13 @@ func (m *PropertyModel) Insert(p *Property) (int64, error) {
             county_id,
             parcel_id,
             property_type,
+            property_class,
+            grade,
+            roof_structure,
+            roof_cover,
+            heating,
+            cooling,
+            floors,
             land_value, 
             improvement_value, 
             appraisal_value,
@@ -75,28 +81,21 @@ func (m *PropertyModel) Insert(p *Property) (int64, error) {
             tax_assessor_url,
             zillow_url,
             floorplan_photo
-        ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
+        )
+        VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24
         ) RETURNING property_id`
-	err = m.DB.QueryRowContext(ctx, query,
-		p.Address,
-		p.City,
-		p.Zip,
-		p.CountyID,
-		p.ParcelID,
-		p.PropertyType,
-		p.LandValue,
-		p.ImprovementValue,
-		p.AppraisalValue,
-		p.LotSize,
-		p.SquareFt,
-		p.Bedrooms,
-		p.Bathrooms,
-		p.YearBuilt,
-		p.TaxURL,
-		p.ZillowURL,
-		p.FloorPlanPhoto,
-	).Scan(&id)
+
+	args := []any{
+		p.Address, p.City, p.Zip, p.CountyID, p.ParcelID, p.PropertyType,
+		p.PropertyClass, p.Grade, p.RoofStructure, p.RoofCover, p.Heating,
+		p.Cooling, p.Floors, p.LandValue, p.ImprovementValue, p.AppraisalValue,
+		p.LotSize, p.SquareFt, p.Bedrooms, p.Bathrooms, p.YearBuilt, p.TaxURL,
+		p.ZillowURL, p.FloorPlanPhoto,
+	}
+
+	var id int64
+	err = m.DB.QueryRowContext(ctx, query, args...).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -248,7 +247,7 @@ func (m *PropertyModel) Latest() ([]Property, error) {
             floorplan_photo
         FROM properties
         ORDER BY property_id DESC
-        LIMIT 15`
+        LIMIT 30`
 
 	var properties []Property
 
