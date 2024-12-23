@@ -408,13 +408,13 @@ func (app *application) scrapeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	parcelIDs, err := scraper.ProcessCSV("./scraper/Gwinnett")
+	parcelIDs, startingBids, err := scraper.ProcessCSV("./scraper/Gwinnett")
 	if err != nil {
 		app.serverError(w, r, fmt.Errorf("error processing CSV: %w", err))
 		return
 	}
 
-	properties, err := scraper.ScrapeGwinnettParcelData(parcelIDs)
+	properties, err := scraper.ScrapeGwinnettParcelData(parcelIDs, startingBids)
 	if err != nil {
 		app.serverError(w, r, fmt.Errorf("error scraping parcel data: %w", err))
 		return

@@ -104,16 +104,17 @@ func (county *CountyScraper) ScrapeAuctionData() error {
 	}
 }
 
-func ProcessCSV(path string) ([]string, error) {
+// TODO: extract starting bid as well
+func ProcessCSV(path string) ([]string, []string, error) {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		Logger.Error("unable to read directory", "err", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	if len(files) == 0 {
 		Logger.Error("No files found in directory", "err", fmt.Sprintf("directory: %s", files))
-		return nil, fmt.Errorf("no files found in directory: %s", path)
+		return nil, nil, fmt.Errorf("no files found in directory: %s", path)
 	}
 
 	file := files[0]
@@ -121,7 +122,7 @@ func ProcessCSV(path string) ([]string, error) {
 	fileInfo, err := file.Info()
 	if err != nil {
 		Logger.Error("unable to retrieve file info", "err", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	filePath := filepath.Join(path, fileInfo.Name())
@@ -129,7 +130,7 @@ func ProcessCSV(path string) ([]string, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		Logger.Error("unable to open file", "err", err)
-		return nil, err
+		return nil, nil, err
 	}
 	defer f.Close()
 
@@ -137,30 +138,30 @@ func ProcessCSV(path string) ([]string, error) {
 	records, err := reader.ReadAll()
 	if err != nil {
 		Logger.Error("unable to read csv", "err", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	var parcelIDs []string
+	var startingBids []string
 	for index, r := range records {
 		if index == 0 {
 			continue
 		}
 		parcelIDs = append(parcelIDs, r[0])
+		startingBids = append(startingBids, r[len(r)-1])
 	}
 
-	return parcelIDs, nil
+	return parcelIDs, startingBids, nil
 }
 
-type ParcelData struct {
-	PropertyID    string
-	AlternateID   string
-	Address       string
-	PropertyClass string
-	Neighborhood  int32
-	DeedAcres     float32
+func moneyLaundering(m string) (float64, error) {
+	m = strings.ReplaceAll(m, "$", "")
+	m = strings.ReplaceAll(m, ",", "")
+
+	return strconv.ParseFloat(m, 64)
 }
 
-func ScrapeGwinnettParcelData(parcelIDs []string) ([]*models.Property, error) {
+func ScrapeGwinnettParcelData(parcelIDs []string, startingBid []string) ([]*models.Property, error) {
 	var properties []*models.Property
 
 	for i := 0; i < len(parcelIDs); i++ {
@@ -177,6 +178,13 @@ func ScrapeGwinnettParcelData(parcelIDs []string) ([]*models.Property, error) {
 			TaxURL:   sql.NullString{String: url, Valid: true},
 			CountyID: sql.NullInt64{Int64: 1, Valid: true},
 		}
+
+		sb, err := moneyLaundering(startingBid[i])
+		if err != nil {
+			Logger.Error("unable to parse float", "err", err)
+			continue
+		}
+		prop.StartingBid = sql.NullFloat64{Float64: sb, Valid: true}
 
 		// Scrape the content of the relevant `div`
 		c.OnHTML("div#dnn_ctr1385_ContentPane", func(e *colly.HTMLElement) {
@@ -324,15 +332,16 @@ func ScrapeGwinnettParcelData(parcelIDs []string) ([]*models.Property, error) {
 			fmt.Printf("Request URL: %s failed with response: %v\nError: %v\n", r.Request.URL, r, err)
 		})
 
-		err := c.Visit(url)
+		err = c.Visit(url)
 		if err != nil {
 			fmt.Printf("Error visiting webpage: %v\n", err)
 			return nil, err
 		}
 
-		// Print the scraped data
 		properties = append(properties, prop)
 	}
-
+	for _, v := range properties {
+		fmt.Println(v)
+	}
 	return properties, nil
 }
