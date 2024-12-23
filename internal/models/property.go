@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-// TODO: check is the json tag is even doing anything????
 type Property struct {
 	ID               int64           `json:"id"`
 	Address          sql.NullString  `json:"address"`
