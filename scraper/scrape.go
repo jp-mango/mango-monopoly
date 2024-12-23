@@ -45,14 +45,12 @@ func (county *CountyScraper) ScrapeAuctionData() error {
 				foundLink = true
 				rawLink := e.Attr("href")
 				link = fmt.Sprintf("https://%s", strings.TrimPrefix(county.Domain+rawLink, "www."))
-				//fmt.Println("Found link:", link)
 
 				scriptPath, err := filepath.Abs("./scraper/main.py")
 				if err != nil {
 					Logger.Error("error getting absolute path", "err", err)
 					return
 				}
-				//fmt.Println("Script path:", scriptPath)
 
 				pythonCMD := exec.Command("uv", "run", scriptPath, link, county.Name)
 
@@ -66,8 +64,6 @@ func (county *CountyScraper) ScrapeAuctionData() error {
 				} else {
 					Logger.Info("Python script succeeded", "output", string(output))
 				}
-
-				//fmt.Println("Python script output:", string(output))
 			}
 		})
 
@@ -104,7 +100,6 @@ func (county *CountyScraper) ScrapeAuctionData() error {
 	}
 }
 
-// TODO: extract starting bid as well
 func ProcessCSV(path string) ([]string, []string, error) {
 	files, err := os.ReadDir(path)
 	if err != nil {
@@ -324,24 +319,22 @@ func ScrapeGwinnettParcelData(parcelIDs []string, startingBid []string) ([]*mode
 
 		c.OnResponse(func(r *colly.Response) {
 			if r.StatusCode != 200 {
-				fmt.Printf("Status: %d\n", r.StatusCode)
+				Logger.Error("error reaching webpage", "Status: %d\n", r.StatusCode)
 			}
 		})
 
 		c.OnError(func(r *colly.Response, err error) {
-			fmt.Printf("Request URL: %s failed with response: %v\nError: %v\n", r.Request.URL, r, err)
+			Logger.Error("error", "request_url", r.Request.URL, "response", r, "err", err)
 		})
 
 		err = c.Visit(url)
 		if err != nil {
-			fmt.Printf("Error visiting webpage: %v\n", err)
+			Logger.Error("error", "Error visiting webpage: %v\n", err)
 			return nil, err
 		}
 
 		properties = append(properties, prop)
 	}
-	for _, v := range properties {
-		fmt.Println(v.StartingBid)
-	}
+
 	return properties, nil
 }
