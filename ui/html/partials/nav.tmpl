@@ -84,11 +84,11 @@
 			</div>
 			<!-- <a href="#" class="text-sm font-semibold leading-6 text-gray-900 hover:text-primary">Feature 2</a> -->
 		</div>
-		<div class="hidden lg:flex lg:flex-1 lg:justify-end">
+		<div class="hidden gap-6 lg:flex lg:flex-1 lg:justify-end">
 			{{if .IsAuthenticated}}
 			<form action='/user/logout' method='POST'>
 				<input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
-				<button>Logout</button>
+				<button class="text-sm font-semibold leading-6 text-gray-900 hover:text-primary">Logout</button>
 			</form>
 			{{else}}
 			<a href="/user/login" class="text-sm font-semibold leading-6 text-gray-900 hover:text-primary">Log in</a>

@@ -1,87 +1,269 @@
 {{define "title"}}Properties{{end}}
 
 {{define "main"}}
-<div>
-	<div class="px-4 sm:px-0">
-		<h3 class="text-base font-semibold leading-7 text-gray-900">Property Information</h3>
-		<p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">Property {{.Property.ID}} details.</p>
-	</div>
-	<div class="mt-6 border-t border-gray-100">
-		<dl class="divide-y divide-gray-100">
-			<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-				<dt class="text-sm font-medium leading-6 text-gray-900">Street Address</dt>
-				<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
-					{{.Property.Address.String}} {{.Property.City.String}}, {{if
-					.County}}{{.County.State}}{{else}}N/A{{end}}
-					{{.Property.Zip.String}}
-				</dd>
-			</div>
+<div class="px-4 sm:px-0">
+	<h3 class="text-base font-semibold leading-7 text-gray-900">Property Information</h3>
+	<p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">Property {{.Property.ID}} details.</p>
+</div>
+<div class="mt-6 border-t border-gray-100">
+	<dl class="divide-y divide-gray-100">
+		<!--Address-->
+		<div class="bg-gray-50 px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Street Address</dt>
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				{{.Property.Address.String}} {{.Property.City.String}}, {{if
+				.County}}{{.County.State}}{{else}}N/A{{end}}
+				{{.Property.Zip.String}}
+			</dd>
+		</div>
+
+		<!--Parcel ID-->
+		<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">ParcelID</dt>
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">{{.Property.ParcelID.String}}
+			</dd>
+		</div>
+
+		<!--Property Class-->
+		<div class="bg-gray-50 px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Property Class</dt>
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				{{.Property.PropertyClass.String}}
+			</dd>
+		</div>
+
+		<!--Property Type-->
+		<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Property Type</dt>
+			{{if eq .Property.PropertyClass.String "Residential Vacant"}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">Vacant Lot
+			</dd>
+			{{else}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">{{.Property.PropertyType.String}}
+			</dd>
+			{{end}}
+		</div>
+
+		<!--Property Grade-->
+		<div class="bg-gray-50 px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Grade</dt>
+			{{if eq .Property.PropertyClass.String "Residential Vacant"}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				N/A
+			</dd>
+			{{else}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				{{.Property.Grade.String}}
+			</dd>
+			{{end}}
+		</div>
+
+		<!--Roof Structure-->
+		<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Roof Structure</dt>
+			{{if eq .Property.PropertyClass.String "Residential Vacant"}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				N/A
+			</dd>
+			{{else}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				{{.Property.RoofStructure.String}}
+			</dd>
+			{{end}}
+		</div>
+
+		<!--Heating-->
+		<div class="bg-gray-50 px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Heating</dt>
+			{{if eq .Property.PropertyClass.String "Residential Vacant"}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				N/A
+			</dd>
+			{{else}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				{{.Property.Heating.String}}
+			</dd>
+			{{end}}
+		</div>
+
+		<!--Cooling-->
+		<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Cooling</dt>
+			{{if eq .Property.PropertyClass.String "Residential Vacant"}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				N/A
+			</dd>
+			{{else}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				{{.Property.Cooling.String}}
+			</dd>
+			{{end}}
+		</div>
+
+		<!--Floors-->
+		<div class="bg-gray-50 px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Floors</dt>
+			{{if eq .Property.PropertyClass.String "Residential Vacant"}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				N/A
+			</dd>
+			{{else}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				{{.Property.Floors.Float64}}
+			</dd>
+			{{end}}
+		</div>
+
+		<!--Land Value-->
+		<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Land Value</dt>
+			{{if eq .Property.PropertyClass.String "Residential Vacant"}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				N/A
+			</dd>
+			{{else}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				$ {{FormatMoney .Property.LandValue.Int64}}
+			</dd>
+			{{end}}
+		</div>
+
+		<!--Improvement Value-->
+		<div class="bg-gray-50 px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Improvement Value</dt>
+			{{if eq .Property.PropertyClass.String "Residential Vacant"}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				N/A
+			</dd>
+			{{else}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				$ {{FormatMoney .Property.ImprovementValue.Int64}}
+			</dd>
+			{{end}}
+		</div>
+
+		<!--Appraisal Value-->
+		<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Appraisal Value</dt>
+			{{if eq .Property.PropertyClass.String "Residential Vacant"}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				N/A
+			</dd>
+			{{else}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				$ {{FormatMoney .Property.AppraisalValue.Int64}}
+			</dd>
+			{{end}}
+		</div>
+
+		<!--Lot Size-->
+		<div class="bg-gray-50 px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Lot Size</dt>
+			<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">This property sits on a <a
+					class="text-primary">{{.Property.LotSize.Float64}}</a> acre lot.
+			</dd>
+		</div>
+
+		<!--Square Footage-->
+		<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Square Footage</dt>
+			{{if eq .Property.PropertyClass.String "Residential Vacant"}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				N/A
+			</dd>
+			{{else}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				-- Still Need To Scrape -- {{.Property.SquareFt.Int64}}
+			</dd>
+			{{end}}
+		</div>
+
+		<!--Bedrooms-->
+		<div class="bg-gray-50 px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Bedrooms</dt>
+			{{if eq .Property.PropertyClass.String "Residential Vacant"}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				N/A
+			</dd>
+			{{else}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				{{.Property.Bedrooms.Int16}}
+			</dd>
+			{{end}}
+		</div>
+
+		<!--Bathrooms-->
+		<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Bathrooms</dt>
+			{{if eq .Property.PropertyClass.String "Residential Vacant"}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				N/A
+			</dd>
+			{{else}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				{{.Property.Bathrooms.Float64}}
+			</dd>
+			{{end}}
+		</div>
+
+		<!--Year Built-->
+		<div class="bg-gray-50 px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Year Built</dt>
+			{{if eq .Property.PropertyClass.String "Residential Vacant"}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				N/A
+			</dd>
+			{{else}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				{{.Property.YearBuilt.Int16}}
+			</dd>
+			{{end}}
+		</div>
 
 
-			<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-				<dt class="text-sm font-medium leading-6 text-gray-900">ParcelID</dt>
-				<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">{{.Property.ParcelID.String}}
-				</dd>
-			</div>
-			<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-				<dt class="text-sm font-medium leading-6 text-gray-900">Property Type</dt>
-				<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">{{.Property.PropertyType.String}}
-				</dd>
-			</div>
-			<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-				<dt class="text-sm font-medium leading-6 text-gray-900">Price</dt>
-				<dd class="mt-1 text-sm leading-6 sm:col-span-2 sm:mt-0 text-primary">
-					${{FormatMoney .Property.AppraisalValue.Int64}}
-				</dd>
-			</div>
-			<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-				<dt class="text-sm font-medium leading-6 text-gray-900">About</dt>
-				<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">This property sits on a <a
-						class="text-primary">{{.Property.LotSize.Float64}}</a> acre lot.
-				</dd>
-			</div>
-			<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-				<dt class="text-sm font-medium leading-6 text-gray-900">Attachments</dt>
-				<dd class="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-					<ul role="list" class="divide-y divide-gray-100 rounded-md border border-gray-200">
-						<li class="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-6">
-							<div class="flex w-0 flex-1 items-center">
-								<svg class="h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor"
-									aria-hidden="true" data-slot="icon">
-									<path fill-rule="evenodd"
-										d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.242Z"
-										clip-rule="evenodd" />
-								</svg>
-								<div class="ml-4 flex min-w-0 flex-1 gap-2">
-									<span class="truncate font-medium">example1.pdf</span>
-									<span class="flex-shrink-0 text-gray-400">2.4mb</span>
-								</div>
+		<!--
+		<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Attachments</dt>
+			<dd class="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+				<ul role="list" class="divide-y divide-gray-100 rounded-md border border-gray-200">
+					<li class="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-6">
+						<div class="flex w-0 flex-1 items-center">
+							<svg class="h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor"
+								aria-hidden="true" data-slot="icon">
+								<path fill-rule="evenodd"
+									d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.242Z"
+									clip-rule="evenodd" />
+							</svg>
+							<div class="ml-4 flex min-w-0 flex-1 gap-2">
+								<span class="truncate font-medium">example1.pdf</span>
+								<span class="flex-shrink-0 text-gray-400">2.4mb</span>
 							</div>
-							<div class="ml-4 flex-shrink-0">
-								<a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Download</a>
+						</div>
+						<div class="ml-4 flex-shrink-0">
+							<a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Download</a>
+						</div>
+					</li>
+					<li class="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-6">
+						<div class="flex w-0 flex-1 items-center">
+							<svg class="h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor"
+								aria-hidden="true" data-slot="icon">
+								<path fill-rule="evenodd"
+									d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.242Z"
+									clip-rule="evenodd" />
+							</svg>
+							<div class="ml-4 flex min-w-0 flex-1 gap-2">
+								<span class="truncate font-medium">example2.pdf</span>
+								<span class="flex-shrink-0 text-gray-400">4.5mb</span>
 							</div>
-						</li>
-						<li class="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-6">
-							<div class="flex w-0 flex-1 items-center">
-								<svg class="h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor"
-									aria-hidden="true" data-slot="icon">
-									<path fill-rule="evenodd"
-										d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.242Z"
-										clip-rule="evenodd" />
-								</svg>
-								<div class="ml-4 flex min-w-0 flex-1 gap-2">
-									<span class="truncate font-medium">example2.pdf</span>
-									<span class="flex-shrink-0 text-gray-400">4.5mb</span>
-								</div>
-							</div>
-							<div class="ml-4 flex-shrink-0">
-								<a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Download</a>
-							</div>
-						</li>
-					</ul>
-				</dd>
-			</div>
-		</dl>
-	</div>
+						</div>
+						<div class="ml-4 flex-shrink-0">
+							<a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Download</a>
+						</div>
+					</li>
+				</ul>
+			</dd>
+		</div>
+		-->
+	</dl>
 </div>
 {{end}}
