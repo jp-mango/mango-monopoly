@@ -13,7 +13,7 @@ import (
 func commonHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//used to restrict where the resources for web page can be loaded from.
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com")
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com; img-src 'self' http://sotf.publicaccessnow.com")
 
 		// used to control what information is included in a Referer header when a user navigates away from your web page.
 		w.Header().Set("Referrer-Policy", "origin-when-cross-origin")
