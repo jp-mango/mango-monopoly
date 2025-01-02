@@ -220,6 +220,18 @@
 			{{end}}
 		</div>
 
+		<!--Floor Plan-->
+		<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+			<dt class="text-sm font-medium leading-6 text-gray-900">Floor Plan</dt>
+			{{if eq .Property.PropertyClass.String "Residential Vacant"}}
+			<dd class="mt-1 text-sm leading-6 text-primary sm:col-span-2 sm:mt-0">
+				N/A
+			</dd>
+			{{else}}
+			<img src={{.Property.FloorPlanPhoto.String}} alt="floor plan image">
+			{{end}}
+		</div>
+
 
 		<!--
 		<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
